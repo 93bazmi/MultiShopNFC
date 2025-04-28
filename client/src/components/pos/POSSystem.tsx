@@ -143,7 +143,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
-              <span>POS System - {activeShop?.name || "Shop"}</span>
+              <span>ระบบขายสินค้า - {activeShop?.name || "ร้านค้า"}</span>
               <Button variant="ghost" size="icon" onClick={onClose}>
                 <X className="h-4 w-4" />
               </Button>
@@ -157,7 +157,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
                 <div className="relative">
                   <Input 
                     type="text" 
-                    placeholder="Search products..." 
+                    placeholder="ค้นหาสินค้า..." 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pr-8"
@@ -181,7 +181,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
                   {filteredProducts.length === 0 ? (
                     <div className="col-span-2 flex flex-col items-center justify-center h-full text-gray-500">
                       <ChevronsLeft className="h-12 w-12 mb-2" />
-                      <p>No products found</p>
+                      <p>ไม่พบสินค้า</p>
                     </div>
                   ) : (
                     filteredProducts.map((product: Product) => (
@@ -206,12 +206,12 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
             <div>
               {/* Cart */}
               <div className="border border-gray-200 rounded-lg p-4 mb-4">
-                <h4 className="text-md font-medium text-gray-800 mb-3">Current Order</h4>
+                <h4 className="text-md font-medium text-gray-800 mb-3">รายการสั่งซื้อ</h4>
                 <div className="h-48 overflow-y-auto mb-3">
                   {cart.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                      <p>Cart is empty</p>
-                      <p className="text-xs mt-1">Add products from the left</p>
+                      <p>ตะกร้าว่างเปล่า</p>
+                      <p className="text-xs mt-1">เลือกสินค้าจากรายการด้านซ้าย</p>
                     </div>
                   ) : (
                     cart.map((item) => (
