@@ -106,26 +106,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Product routes
+  // Create memory fallback for products
+  const memProducts = new Map();
+  let productIdCounter = 1;
+  
+  // Helper to get demo products when Airtable fails
+  const getFallbackProducts = (shopId?: number) => {
+    if (memProducts.size === 0) {
+      // Add some demo products if none exist yet
+      [
+        { shopId: 1, name: "Coffee", price: 50, icon: "coffee", available: true, description: "Fresh brewed coffee" },
+        { shopId: 1, name: "Tea", price: 40, icon: "mug-hot", available: true, description: "Hot tea" },
+        { shopId: 1, name: "Cake", price: 80, icon: "cake", available: true, description: "Delicious cake" },
+        { shopId: 2, name: "Pad Thai", price: 120, icon: "bowl-food", available: true, description: "Classic Thai dish" },
+        { shopId: 2, name: "Green Curry", price: 150, icon: "utensils", available: true, description: "Spicy green curry" },
+        { shopId: 2, name: "Mango Sticky Rice", price: 100, icon: "rice", available: true, description: "Sweet dessert" },
+        { shopId: 3, name: "Smartphone", price: 500, icon: "mobile", available: true, description: "Latest smartphone" },
+        { shopId: 3, name: "Tablet", price: 700, icon: "tablet", available: true, description: "Portable tablet" },
+        { shopId: 3, name: "Earbuds", price: 200, icon: "headphones", available: true, description: "Wireless earbuds" }
+      ].forEach(product => {
+        const id = productIdCounter++;
+        memProducts.set(id, { ...product, id });
+      });
+    }
+    
+    const products = Array.from(memProducts.values());
+    
+    // Filter by shop if needed
+    if (shopId) {
+      return products.filter(p => p.shopId === shopId);
+    }
+    
+    return products;
+  };
+  
   app.get("/api/products", async (req, res) => {
     try {
       const shopId = req.query.shopId ? parseInt(req.query.shopId as string) : undefined;
       
       let products;
-      if (shopId) {
-        products = await storage.getProductsByShop(shopId);
-      } else {
-        products = await storage.getProducts();
+      try {
+        if (shopId) {
+          products = await storage.getProductsByShop(shopId);
+        } else {
+          products = await storage.getProducts();
+        }
+      } catch (error) {
+        console.warn("Falling back to memory storage for products:", error);
+        products = getFallbackProducts(shopId);
       }
       
       res.json(products);
     } catch (error) {
+      console.error("Error fetching products:", error);
       res.status(500).json({ message: "Error fetching products" });
     }
   });
 
   app.get("/api/products/:id", async (req, res) => {
     try {
-      const product = await storage.getProduct(parseInt(req.params.id));
+      const productId = parseInt(req.params.id);
+      let product;
+      
+      try {
+        product = await storage.getProduct(productId);
+      } catch (error) {
+        // Fallback to memory storage
+        product = memProducts.get(productId);
+      }
+      
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
