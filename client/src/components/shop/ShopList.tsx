@@ -1,19 +1,8 @@
 import { useState } from "react";
 import { Shop } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Coffee, Book, ShoppingBag, PizzaIcon, Plus, CreditCard } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { insertShopSchema } from "@shared/schema";
-import * as z from "zod";
-import { apiRequest } from "@/lib/queryClient";
-import { API } from "@/lib/airtable";
+import { Coffee, Book, ShoppingBag, PizzaIcon, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import POSSystem from "@/components/pos/POSSystem";
 
@@ -22,58 +11,9 @@ interface ShopListProps {
   isLoading: boolean;
 }
 
-const extendedShopSchema = insertShopSchema.extend({
-  name: z.string().min(2, { message: "Shop name must be at least 2 characters" }),
-});
-
 const ShopList = ({ shops, isLoading }: ShopListProps) => {
-  const [open, setOpen] = useState(false);
   const [showPOS, setShowPOS] = useState(false);
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  // Create form
-  const form = useForm<z.infer<typeof extendedShopSchema>>({
-    resolver: zodResolver(extendedShopSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      icon: "store",
-      iconColor: "blue",
-      status: "active",
-      ownerId: 1, // Default owner ID
-    },
-  });
-
-  // Add shop mutation
-  const addShopMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof extendedShopSchema>) => {
-      const res = await apiRequest("POST", API.SHOPS, values);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [API.SHOPS] });
-      toast({
-        title: "Shop created",
-        description: "Your shop has been created successfully",
-      });
-      setOpen(false);
-      form.reset();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to create shop: ${error.message}`,
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Handle form submission
-  const onSubmit = (values: z.infer<typeof extendedShopSchema>) => {
-    addShopMutation.mutate(values);
-  };
 
   // Get icon for shop
   const getShopIcon = (shop: Shop) => {
@@ -110,64 +50,6 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold text-gray-800">ร้านค้าทั้งหมด</h3>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="mr-2 h-4 w-4" />
-                เพิ่มร้านค้า
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>เพิ่มร้านค้าใหม่</DialogTitle>
-              </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>ชื่อร้านค้า</FormLabel>
-                        <FormControl>
-                          <Input placeholder="กรอกชื่อร้านค้า" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>รายละเอียด</FormLabel>
-                        <FormControl>
-                          <Input placeholder="กรอกรายละเอียดร้านค้า" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="flex justify-end space-x-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setOpen(false)}
-                    >
-                      ยกเลิก
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={addShopMutation.isPending}
-                    >
-                      {addShopMutation.isPending ? "กำลังสร้าง..." : "สร้างร้านค้า"}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
         </div>
         
         {isLoading ? (
@@ -189,7 +71,7 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {shops.length === 0 ? (
               <div className="col-span-2 text-center py-8 text-gray-500">
-                ไม่พบร้านค้า กรุณาสร้างร้านค้าแรกของคุณ!
+                ไม่พบร้านค้า
               </div>
             ) : (
               shops.map((shop) => (

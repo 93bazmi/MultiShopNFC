@@ -13,9 +13,9 @@ const ShopsPage = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>My Shops</CardTitle>
+          <CardTitle>ร้านค้า</CardTitle>
           <CardDescription>
-            Manage all your shops from one place. Create new shops and view existing ones.
+            เลือกร้านค้าเพื่อทำรายการชำระเงิน
           </CardDescription>
         </CardHeader>
         <CardContent>
