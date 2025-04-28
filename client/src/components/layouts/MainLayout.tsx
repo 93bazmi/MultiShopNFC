@@ -3,8 +3,6 @@ import { useLocation } from "wouter";
 import { 
   ChevronLeft, 
   Store, 
-  Package, 
-  CreditCard,
   ShoppingCart,
   Menu
 } from "lucide-react";
@@ -23,8 +21,6 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
   const navigation = [
     { name: "ร้านค้า", href: "/shops", icon: Store },
-    { name: "สินค้า", href: "/products", icon: Package },
-    { name: "ระบบชำระเงิน", href: "/pos", icon: CreditCard },
   ];
 
   const getPageTitle = () => {
