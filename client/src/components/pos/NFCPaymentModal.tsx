@@ -117,11 +117,11 @@ const NFCPaymentModal = ({
           
           <div className="border border-gray-200 rounded-lg p-4 mb-6">
             <div className="flex justify-between mb-2">
-              <span className="text-gray-600">Total Amount:</span>
-              <span className="font-bold text-gray-800">{amount} Coins</span>
+              <span className="text-gray-600">ยอดรวม:</span>
+              <span className="font-bold text-gray-800">{amount} เหรียญ</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Shop:</span>
+              <span className="text-gray-600">ร้านค้า:</span>
               <span className="text-gray-800">{shopName}</span>
             </div>
           </div>
@@ -138,14 +138,14 @@ const NFCPaymentModal = ({
               onClick={onClose}
               disabled={isProcessing}
             >
-              Cancel
+              ยกเลิก
             </Button>
             <Button 
               className="flex-1" 
               onClick={handleManualEntry}
               disabled={isProcessing}
             >
-              Manual Entry
+              ป้อนด้วยตนเอง
             </Button>
           </div>
         </div>
