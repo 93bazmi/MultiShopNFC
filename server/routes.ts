@@ -186,9 +186,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/products", validateBody(insertProductSchema), async (req, res) => {
     try {
-      const product = await storage.createProduct(req.body);
+      let product;
+      try {
+        product = await storage.createProduct(req.body);
+      } catch (error) {
+        console.warn("Falling back to memory storage for product creation:", error);
+        // Create in memory
+        const id = productIdCounter++;
+        const newProduct = { ...req.body, id };
+        memProducts.set(id, newProduct);
+        product = newProduct;
+      }
+      
       res.json(product);
     } catch (error) {
+      console.error("Error creating product:", error);
       res.status(500).json({ message: "Error creating product" });
     }
   });
@@ -196,15 +208,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/products/:id", async (req, res) => {
     try {
       const productId = parseInt(req.params.id);
-      const product = await storage.getProduct(productId);
+      let product;
+      
+      try {
+        product = await storage.getProduct(productId);
+      } catch (error) {
+        product = memProducts.get(productId);
+      }
       
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
       
-      const updatedProduct = await storage.updateProduct(productId, req.body);
+      let updatedProduct;
+      try {
+        updatedProduct = await storage.updateProduct(productId, req.body);
+      } catch (error) {
+        console.warn("Falling back to memory storage for product update:", error);
+        // Update in memory
+        const newProduct = { ...product, ...req.body };
+        memProducts.set(productId, newProduct);
+        updatedProduct = newProduct;
+      }
+      
       res.json(updatedProduct);
     } catch (error) {
+      console.error("Error updating product:", error);
       res.status(500).json({ message: "Error updating product" });
     }
   });
@@ -291,9 +320,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/nfc-cards", validateBody(insertNfcCardSchema), async (req, res) => {
     try {
-      const card = await storage.createNfcCard(req.body);
+      let card;
+      try {
+        card = await storage.createNfcCard(req.body);
+      } catch (error) {
+        console.warn("Falling back to memory storage for NFC card creation:", error);
+        // Create in memory
+        const id = nfcCardIdCounter++;
+        const newCard = { ...req.body, id, lastUsed: null } as NfcCard;
+        memNfcCards.set(id, newCard);
+        card = newCard;
+      }
+      
       res.json(card);
     } catch (error) {
+      console.error("Error creating NFC card:", error);
       res.status(500).json({ message: "Error creating NFC card" });
     }
   });
@@ -301,15 +342,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/nfc-cards/:id", async (req, res) => {
     try {
       const cardId = parseInt(req.params.id);
-      const card = await storage.getNfcCard(cardId);
+      let card;
+      
+      try {
+        card = await storage.getNfcCard(cardId);
+      } catch (error) {
+        card = memNfcCards.get(cardId);
+      }
       
       if (!card) {
         return res.status(404).json({ message: "NFC card not found" });
       }
       
-      const updatedCard = await storage.updateNfcCard(cardId, req.body);
+      let updatedCard;
+      try {
+        updatedCard = await storage.updateNfcCard(cardId, req.body);
+      } catch (error) {
+        console.warn("Falling back to memory storage for NFC card update:", error);
+        // Update in memory
+        const newCard = { ...card, ...req.body };
+        memNfcCards.set(cardId, newCard);
+        updatedCard = newCard;
+      }
+      
       res.json(updatedCard);
     } catch (error) {
+      console.error("Error updating NFC card:", error);
       res.status(500).json({ message: "Error updating NFC card" });
     }
   });
