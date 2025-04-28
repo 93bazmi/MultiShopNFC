@@ -25,14 +25,14 @@ const NFCPaymentModal = ({
   onSuccess 
 }: NFCPaymentModalProps) => {
   const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState("Waiting for card...");
+  const [status, setStatus] = useState("กำลังรอบัตร...");
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     if (open) {
       setProgress(0);
-      setStatus("Waiting for card...");
+      setStatus("กำลังรอบัตร...");
       setIsProcessing(false);
       
       // Simulate NFC card detection
@@ -42,7 +42,7 @@ const NFCPaymentModal = ({
           
           // When progress is at 75%, simulate a card detection
           if (prev < 75 && next >= 75) {
-            setStatus("Card detected, processing...");
+            setStatus("ตรวจพบบัตร กำลังทำรายการ...");
             processPayment();
           }
           
@@ -74,7 +74,7 @@ const NFCPaymentModal = ({
       
       // Wait a bit to show the processing state
       setTimeout(() => {
-        setStatus("Payment successful!");
+        setStatus("ชำระเงินสำเร็จ!");
         setProgress(100);
         
         // Wait another moment before closing
@@ -85,11 +85,11 @@ const NFCPaymentModal = ({
       
     } catch (error) {
       toast({
-        title: "Payment failed",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        title: "การชำระเงินล้มเหลว",
+        description: error instanceof Error ? error.message : "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
         variant: "destructive"
       });
-      setStatus("Payment failed. Please try again.");
+      setStatus("การชำระเงินล้มเหลว กรุณาลองอีกครั้ง");
       setTimeout(() => {
         onClose();
       }, 2000);
@@ -98,7 +98,7 @@ const NFCPaymentModal = ({
 
   // For demo purposes, allow manual entry to trigger payment
   const handleManualEntry = () => {
-    setStatus("Card detected, processing...");
+    setStatus("ตรวจพบบัตร กำลังทำรายการ...");
     setProgress(75);
     processPayment();
   };
@@ -111,8 +111,8 @@ const NFCPaymentModal = ({
             <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
               <Wifi className="text-primary text-2xl" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">NFC Payment</h3>
-            <p className="text-gray-600">Please tap your NFC card on the reader to complete payment</p>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">ชำระเงินด้วยบัตร NFC</h3>
+            <p className="text-gray-600">กรุณาแตะบัตร NFC ที่เครื่องอ่านบัตรเพื่อชำระเงิน</p>
           </div>
           
           <div className="border border-gray-200 rounded-lg p-4 mb-6">
