@@ -423,4 +423,14 @@ export class MemStorage implements IStorage {
 }
 
 // Use Airtable in production, MemStorage for development/testing
-export const storage = new AirtableStorage();
+// Initialize with AirtableStorage, but if that fails, fall back to MemStorage
+let storage: IStorage;
+
+try {
+  storage = new AirtableStorage();
+} catch (error) {
+  console.warn("Failed to initialize AirtableStorage, falling back to MemStorage");
+  storage = new MemStorage();
+}
+
+export { storage };

@@ -243,7 +243,7 @@ const TransactionsPage = () => {
                                     ? "bg-yellow-100 text-yellow-800"
                                     : "bg-red-100 text-red-800"
                                 )}>
-                                  {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                                  {transaction.status && transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1) || "Pending"}
                                 </span>
                               </TableCell>
                             </TableRow>
@@ -311,7 +311,7 @@ const TransactionsPage = () => {
                                   ? "bg-yellow-100 text-yellow-800"
                                   : "bg-red-100 text-red-800"
                               )}>
-                                {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                                {transaction.status && transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1) || "Pending"}
                               </span>
                             </TableCell>
                           </TableRow>

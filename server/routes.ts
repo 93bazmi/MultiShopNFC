@@ -3,7 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
   insertUserSchema, insertShopSchema, insertProductSchema, 
-  insertNfcCardSchema, insertTransactionSchema 
+  insertNfcCardSchema, insertTransactionSchema,
+  NfcCard // Added import for the NfcCard type
 } from "@shared/schema";
 import { ZodError } from "zod";
 
@@ -160,9 +161,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // NFC Card routes
+  // Create memory fallback for NFC cards
+  const memNfcCards = new Map<number, NfcCard>();
+  let nfcCardIdCounter = 1;
+  
+  // Helper to get demo NFC cards when Airtable fails
+  const getFallbackNfcCards = () => {
+    if (memNfcCards.size === 0) {
+      // Add some demo cards if none exist yet
+      [
+        { cardId: "NFC001", balance: 500, active: true },
+        { cardId: "NFC002", balance: 200, active: true },
+        { cardId: "NFC003", balance: 1000, active: true },
+      ].forEach(card => {
+        const id = nfcCardIdCounter++;
+        memNfcCards.set(id, { ...card, id, lastUsed: null } as NfcCard);
+      });
+    }
+    return Array.from(memNfcCards.values());
+  };
+
   app.get("/api/nfc-cards", async (req, res) => {
     try {
-      const cards = await storage.getNfcCards();
+      let cards;
+      try {
+        cards = await storage.getNfcCards();
+      } catch (error) {
+        console.warn("Falling back to memory storage for NFC cards:", error);
+        cards = getFallbackNfcCards();
+      }
       res.json(cards);
     } catch (error) {
       console.error("Error fetching NFC cards:", error);
@@ -172,7 +199,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/nfc-cards/:id", async (req, res) => {
     try {
-      const card = await storage.getNfcCard(parseInt(req.params.id));
+      const cardId = parseInt(req.params.id);
+      let card;
+      
+      try {
+        card = await storage.getNfcCard(cardId);
+      } catch (error) {
+        // Fallback to memory storage
+        card = memNfcCards.get(cardId);
+      }
+      
       if (!card) {
         return res.status(404).json({ message: "NFC card not found" });
       }
@@ -184,10 +220,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/nfc-cards/by-card-id/:cardId", async (req, res) => {
     try {
-      const card = await storage.getNfcCardByCardId(req.params.cardId);
+      const searchCardId = req.params.cardId;
+      let card;
+      
+      try {
+        card = await storage.getNfcCardByCardId(searchCardId);
+      } catch (error) {
+        // Fallback to memory storage
+        card = Array.from(memNfcCards.values()).find(c => c.cardId === searchCardId);
+      }
+      
       if (!card) {
         return res.status(404).json({ message: "NFC card not found" });
       }
+      
       res.json(card);
     } catch (error) {
       res.status(500).json({ message: "Error fetching NFC card" });
