@@ -204,6 +204,8 @@ const TransactionsPage = () => {
                         <TableHead>Card ID</TableHead>
                         <TableHead>Type</TableHead>
                         <TableHead>Amount</TableHead>
+                        <TableHead>Previous</TableHead>
+                        <TableHead>New Balance</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Status</TableHead>
                       </TableRow>
@@ -211,7 +213,7 @@ const TransactionsPage = () => {
                     <TableBody>
                       {filteredTransactions.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                          <TableCell colSpan={9} className="text-center py-8 text-gray-500">
                             No transactions found
                           </TableCell>
                         </TableRow>
@@ -232,6 +234,16 @@ const TransactionsPage = () => {
                               )}>
                                 {transaction.type === "topup" ? "+" : "-"}
                                 {transaction.amount} Coins
+                              </TableCell>
+                              <TableCell>
+                                {transaction.previousBalance !== null && transaction.previousBalance !== undefined 
+                                  ? `${transaction.previousBalance} Coins` 
+                                  : "N/A"}
+                              </TableCell>
+                              <TableCell>
+                                {transaction.newBalance !== null && transaction.newBalance !== undefined 
+                                  ? `${transaction.newBalance} Coins` 
+                                  : "N/A"}
                               </TableCell>
                               <TableCell>{formatDate(transaction.timestamp)}</TableCell>
                               <TableCell>
@@ -279,6 +291,8 @@ const TransactionsPage = () => {
                         <TableHead>Card ID</TableHead>
                         <TableHead>Type</TableHead>
                         <TableHead>Amount</TableHead>
+                        <TableHead>Previous</TableHead>
+                        <TableHead>New Balance</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Status</TableHead>
                       </TableRow>
@@ -300,6 +314,16 @@ const TransactionsPage = () => {
                             )}>
                               {transaction.type === "topup" ? "+" : "-"}
                               {transaction.amount} Coins
+                            </TableCell>
+                            <TableCell>
+                              {transaction.previousBalance !== null && transaction.previousBalance !== undefined 
+                                ? `${transaction.previousBalance} Coins` 
+                                : "N/A"}
+                            </TableCell>
+                            <TableCell>
+                              {transaction.newBalance !== null && transaction.newBalance !== undefined 
+                                ? `${transaction.newBalance} Coins` 
+                                : "N/A"}
                             </TableCell>
                             <TableCell>{formatDate(transaction.timestamp)}</TableCell>
                             <TableCell>
