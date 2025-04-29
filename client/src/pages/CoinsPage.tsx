@@ -413,6 +413,9 @@ const CoinsPage = () => {
                           </div>
                           <p className="text-xs text-gray-600 mt-0.5">
                             {transaction.type === "topup" ? "Topped up" : "Used for purchase"}
+                            {transaction.previousBalance !== null && transaction.previousBalance !== undefined && 
+                             transaction.newBalance !== null && transaction.newBalance !== undefined ? 
+                              ` (${transaction.previousBalance} → ${transaction.newBalance} Coins)` : ""}
                           </p>
                           <p className={cn(
                             "text-sm font-medium mt-0.5",
@@ -567,6 +570,8 @@ const CoinsPage = () => {
                       <TableRow>
                         <TableHead>Type</TableHead>
                         <TableHead>Amount</TableHead>
+                        <TableHead>Previous</TableHead>
+                        <TableHead>New Balance</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Status</TableHead>
                       </TableRow>
@@ -574,7 +579,7 @@ const CoinsPage = () => {
                     <TableBody>
                       {getCardTransactions(selectedCardId).length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+                          <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                             No transactions found for this card
                           </TableCell>
                         </TableRow>
@@ -588,6 +593,16 @@ const CoinsPage = () => {
                             )}>
                               {transaction.type === "topup" ? "+" : "-"}
                               {transaction.amount} Coins
+                            </TableCell>
+                            <TableCell>
+                              {transaction.previousBalance !== null && transaction.previousBalance !== undefined 
+                                ? `${transaction.previousBalance} Coins` 
+                                : "N/A"}
+                            </TableCell>
+                            <TableCell>
+                              {transaction.newBalance !== null && transaction.newBalance !== undefined 
+                                ? `${transaction.newBalance} Coins` 
+                                : "N/A"}
                             </TableCell>
                             <TableCell>{formatTimeAgo(transaction.timestamp)}</TableCell>
                             <TableCell>

@@ -44,6 +44,13 @@ const NFCPaymentSuccess = ({ open, onClose, paymentResult }: NFCPaymentSuccessPr
                 #{paymentResult.card?.cardId || "ไม่ทราบ"}
               </span>
             </div>
+            <div className="flex justify-between mb-2">
+              <span className="text-gray-600">ยอดเดิม:</span>
+              <span className="text-gray-800">
+                {paymentResult.transaction?.previousBalance !== undefined ? 
+                 `${paymentResult.transaction.previousBalance} เหรียญ` : "ไม่มีข้อมูล"}
+              </span>
+            </div>
             <div className="flex justify-between">
               <span className="text-gray-600">ยอดคงเหลือ:</span>
               <span className="font-bold text-primary">
