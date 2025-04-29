@@ -291,8 +291,8 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
         </DialogContent>
       </Dialog>
 
-      {/* NFC Payment Modal */}
-      <NFCPaymentModal
+      {/* Mock NFC Scan Modal */}
+      <MockNFCScan
         open={showNfcPayment}
         onClose={() => setShowNfcPayment(false)}
         amount={calculateTotal()}

@@ -46,14 +46,24 @@ const MockNFCScan = ({
 
   const nfcPaymentMutation = useMutation({
     mutationFn: async (values: z.infer<typeof scanSchema>) => {
-      return apiRequest("/api/nfc-payment", {
+      const response = await fetch("/api/nfc-payment", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           cardId: values.cardId,
           shopId,
           amount: values.amount,
         }),
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "การชำระเงินล้มเหลว");
+      }
+      
+      return response.json();
     },
     onSuccess: (data) => {
       setPaymentResult(data);
