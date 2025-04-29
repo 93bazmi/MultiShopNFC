@@ -8,7 +8,6 @@ import { X, Search, Coffee, Cookie, IceCream, ChefHat, Sandwich, ChevronsLeft } 
 import { useQuery } from "@tanstack/react-query";
 import { API } from "@/lib/airtable";
 import NFCPaymentModal from "./NFCPaymentModal";
-import MockNFCScan from "./MockNFCScan";
 import NFCPaymentSuccess from "./NFCPaymentSuccess";
 import { cn } from "@/lib/utils";
 
@@ -291,8 +290,8 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
         </DialogContent>
       </Dialog>
 
-      {/* Mock NFC Scan Modal */}
-      <MockNFCScan
+      {/* NFC Payment Modal */}
+      <NFCPaymentModal
         open={showNfcPayment}
         onClose={() => setShowNfcPayment(false)}
         amount={calculateTotal()}
