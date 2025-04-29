@@ -32,9 +32,18 @@ const topupCardSchema = z.object({
   amount: z.number().min(1, { message: "Amount must be at least 1 coin" }),
 });
 
+// Schema for simulating NFC transaction
+const simulateTransactionSchema = z.object({
+  cardId: z.string().min(1, { message: "Card ID is required" }),
+  amount: z.number().min(1, { message: "Amount must be at least 1 coin" }),
+  type: z.enum(["purchase", "topup"]),
+  shopId: z.number(),
+});
+
 const CoinsPage = () => {
   const [openNewCard, setOpenNewCard] = useState(false);
   const [openTopup, setOpenTopup] = useState(false);
+  const [openSimulateTransaction, setOpenSimulateTransaction] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -65,6 +74,17 @@ const CoinsPage = () => {
     defaultValues: {
       cardId: 0,
       amount: 0,
+    },
+  });
+
+  // Form for simulating NFC transaction
+  const simulateTransactionForm = useForm<z.infer<typeof simulateTransactionSchema>>({
+    resolver: zodResolver(simulateTransactionSchema),
+    defaultValues: {
+      cardId: "",
+      amount: 1,
+      type: "purchase",
+      shopId: 1, // Default shop ID
     },
   });
 
