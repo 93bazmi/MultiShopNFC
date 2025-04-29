@@ -463,16 +463,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Missing required fields: cardId, shopId, or amount" });
       }
       
-      // Find the card
-      const card = await storage.getNfcCardByCardId(cardId);
-      if (!card) {
-        return res.status(404).json({ message: "NFC card not found" });
-      }
-      
       // Check if shop exists
       const shop = await storage.getShop(shopId);
       if (!shop) {
         return res.status(404).json({ message: "Shop not found" });
+      }
+      
+      // Find the card or create it if it doesn't exist
+      let card = await storage.getNfcCardByCardId(cardId);
+      
+      if (!card) {
+        // Create a new card with initial balance
+        console.log(`Card ID ${cardId} not found, creating new card`);
+        try {
+          card = await storage.createNfcCard({
+            cardId: cardId,
+            balance: 100, // Give initial balance of 100 coins for demo
+            active: true
+          });
+          console.log(`New card created with ID ${card.id} and balance ${card.balance}`);
+        } catch (createError) {
+          console.error("Error creating new card:", createError);
+          return res.status(500).json({ message: "Error creating new NFC card" });
+        }
       }
       
       // Check if card has enough balance
@@ -504,6 +517,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         remainingBalance: updatedCard.balance
       });
     } catch (error) {
+      console.error("Error processing NFC payment:", error);
       res.status(500).json({ message: "Error processing NFC payment" });
     }
   });
