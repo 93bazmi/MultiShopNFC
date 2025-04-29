@@ -113,7 +113,20 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
 
   // Process payment
   const processPayment = () => {
+    // Check if there's an active shop before proceeding
+    if (!activeShop || !activeShop.id) {
+      console.error("No active shop selected or invalid shop ID");
+      alert("กรุณาเลือกร้านค้าก่อนชำระเงิน");
+      return;
+    }
+    
+    if (cart.length === 0) {
+      alert("กรุณาเลือกสินค้าก่อนชำระเงิน");
+      return;
+    }
+    
     if (paymentMethod === "nfc") {
+      console.log("Processing payment for shop ID:", activeShop.id);
       setShowNfcPayment(true);
     } else {
       // Cash payment processing
@@ -291,14 +304,16 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
       </Dialog>
 
       {/* NFC Payment Modal */}
-      <NFCPaymentModal
-        open={showNfcPayment}
-        onClose={() => setShowNfcPayment(false)}
-        amount={calculateTotal()}
-        shopId={activeShop?.id || 0}
-        shopName={activeShop?.name || ""}
-        onSuccess={handlePaymentSuccess}
-      />
+      {activeShop && showNfcPayment && (
+        <NFCPaymentModal
+          open={showNfcPayment}
+          onClose={() => setShowNfcPayment(false)}
+          amount={calculateTotal()}
+          shopId={activeShop.id}
+          shopName={activeShop.name}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
 
       {/* Payment Success Modal */}
       <NFCPaymentSuccess
