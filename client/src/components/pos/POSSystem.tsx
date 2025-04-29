@@ -8,6 +8,7 @@ import { X, Search, Coffee, Cookie, IceCream, ChefHat, Sandwich, ChevronsLeft } 
 import { useQuery } from "@tanstack/react-query";
 import { API } from "@/lib/airtable";
 import NFCPaymentModal from "./NFCPaymentModal";
+import MockNFCScan from "./MockNFCScan";
 import NFCPaymentSuccess from "./NFCPaymentSuccess";
 import { cn } from "@/lib/utils";
 
