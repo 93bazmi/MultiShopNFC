@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Shop } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Coffee, Book, ShoppingBag, PizzaIcon, CreditCard } from "lucide-react";
+import { Wine, ShoppingBag, ChefHat, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import POSSystem from "@/components/pos/POSSystem";
 
@@ -18,12 +18,10 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
   // Get icon for shop
   const getShopIcon = (shop: Shop) => {
     switch (shop.icon) {
-      case "coffee":
-        return <Coffee className="text-primary" />;
-      case "book":
-        return <Book className="text-secondary" />;
-      case "pizza":
-        return <PizzaIcon className="text-yellow-600" />;
+      case "wine":
+        return <Wine className="text-primary" />;
+      case "food":
+        return <ChefHat className="text-primary" />;
       default:
         return <ShoppingBag className="text-primary" />;
     }

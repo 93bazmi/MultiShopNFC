@@ -472,7 +472,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         shopId,
         cardId: card.id,
         type: 'purchase',
-        status: 'completed'
+        status: 'completed',
+        previousBalance: card.balance, // บันทึกยอดเงินก่อนทำรายการ
+        newBalance: card.balance - amount // บันทึกยอดเงินหลังทำรายการ
       });
       
       res.json({

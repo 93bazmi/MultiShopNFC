@@ -89,6 +89,8 @@ export const transactions = pgTable("transactions", {
   timestamp: timestamp("timestamp").notNull().defaultNow(),
   type: text("type").notNull(), // 'purchase', 'topup', etc.
   status: text("status").notNull().default("completed"),
+  previousBalance: integer("previous_balance"), // ยอดเงินในบัตรก่อนทำธุรกรรม
+  newBalance: integer("new_balance"), // ยอดเงินในบัตรหลังทำธุรกรรม
 });
 
 export const insertTransactionSchema = createInsertSchema(transactions).pick({
@@ -97,6 +99,8 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
   cardId: true,
   type: true,
   status: true,
+  previousBalance: true,
+  newBalance: true,
 });
 
 // Type exports
