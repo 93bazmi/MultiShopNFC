@@ -419,9 +419,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ message: "Insufficient balance on NFC card" });
         }
         
+        // Store previous and new balance for the transaction
+        req.body.previousBalance = card.balance;
+        req.body.newBalance = card.balance - req.body.amount;
+        
         // Update card balance
         await storage.updateNfcCard(card.id, {
-          balance: card.balance - req.body.amount,
+          balance: req.body.newBalance,
+          lastUsed: new Date()
+        });
+      } else if (req.body.cardId && req.body.type === 'topup') {
+        // For top-ups, add to the balance
+        const card = await storage.getNfcCard(req.body.cardId);
+        if (!card) {
+          return res.status(404).json({ message: "NFC card not found" });
+        }
+        
+        // Store previous and new balance for the transaction
+        req.body.previousBalance = card.balance;
+        req.body.newBalance = card.balance + req.body.amount;
+        
+        // Update card balance
+        await storage.updateNfcCard(card.id, {
+          balance: req.body.newBalance,
           lastUsed: new Date()
         });
       }

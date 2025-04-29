@@ -1,4 +1,4 @@
-import { APIKey, BaseId } from "airtable";
+import Airtable from "airtable";
 
 // Airtable configuration
 export const airtableConfig = {
@@ -57,6 +57,8 @@ export const FIELD_MAPS = {
     timestamp: "timestamp",
     type: "type",
     status: "status",
+    previousBalance: "previousBalance",
+    newBalance: "newBalance",
   },
 };
 
