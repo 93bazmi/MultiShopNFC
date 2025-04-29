@@ -70,10 +70,21 @@ const NFCPaymentModal = ({
       // Use manual card ID if provided, otherwise use the default one
       const cardIdToUse = manualCardId || cardId;
       
+      // Validate that we have a valid shop ID before proceeding
+      if (!shopId) {
+        throw new Error("ไม่พบข้อมูลร้านค้า กรุณาเลือกร้านค้าก่อนทำรายการ");
+      }
+      
+      console.log("Processing payment with:", {
+        cardId: cardIdToUse,
+        shopId: shopId,
+        amount: amount
+      });
+      
       const response = await apiRequest("POST", API.NFC_PAYMENT, {
         cardId: cardIdToUse,
-        shopId,
-        amount
+        shopId: shopId,
+        amount: amount
       });
       
       if (!response.ok) {
@@ -95,6 +106,7 @@ const NFCPaymentModal = ({
       }, 1000);
       
     } catch (error) {
+      console.error("Payment error:", error);
       toast({
         title: "การชำระเงินล้มเหลว",
         description: error instanceof Error ? error.message : "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
