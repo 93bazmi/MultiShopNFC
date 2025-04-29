@@ -144,9 +144,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
               <span>ระบบขายสินค้า - {activeShop?.name || "ร้านค้า"}</span>
-              <Button variant="ghost" size="icon" onClick={onClose}>
-                <X className="h-4 w-4" />
-              </Button>
+              
             </DialogTitle>
           </DialogHeader>
           
@@ -275,16 +273,6 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
                   >
                     <Coffee className="mr-2 h-4 w-4" />
                     <span>บัตร NFC</span>
-                  </Button>
-                  <Button
-                    variant={paymentMethod === "cash" ? "default" : "outline"}
-                    className={cn(
-                      paymentMethod === "cash" ? "bg-primary text-white" : "bg-gray-100 text-gray-800"
-                    )}
-                    onClick={() => setPaymentMethod("cash")}
-                  >
-                    <Coffee className="mr-2 h-4 w-4" />
-                    <span>เงินสด</span>
                   </Button>
                 </div>
                 <div className="text-center">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Wifi, X } from "lucide-react";
@@ -106,6 +106,9 @@ const NFCPaymentModal = ({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="sr-only">การชำระเงินด้วยบัตร NFC</DialogTitle>
+        </DialogHeader>
         <div className="text-center">
           <div className="mb-6">
             <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
