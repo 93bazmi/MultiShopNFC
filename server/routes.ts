@@ -459,15 +459,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { cardId, shopId, amount } = req.body;
       
-      if (!cardId || !shopId || !amount) {
+      console.log("Received NFC payment request:", { cardId, shopId, amount });
+      
+      if (!cardId || shopId === undefined || amount === undefined) {
         return res.status(400).json({ message: "Missing required fields: cardId, shopId, or amount" });
       }
       
+      // Convert shopId to number if it's a string
+      const shopIdNum = typeof shopId === 'string' ? parseInt(shopId, 10) : shopId;
+      
+      if (isNaN(shopIdNum)) {
+        return res.status(400).json({ message: "Invalid shop ID format" });
+      }
+      
+      console.log("Looking for shop with ID:", shopIdNum);
+      
       // Check if shop exists
-      const shop = await storage.getShop(shopId);
+      const shop = await storage.getShop(shopIdNum);
       if (!shop) {
+        console.error(`Shop with ID ${shopIdNum} not found`);
         return res.status(404).json({ message: "Shop not found" });
       }
+      
+      console.log("Found shop:", shop.name);
       
       // Find the card or create it if it doesn't exist
       let card = await storage.getNfcCardByCardId(cardId);
@@ -502,7 +516,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create transaction record
       const transaction = await storage.createTransaction({
         amount,
-        shopId,
+        shopId: shopIdNum, // Use the validated shopId
         cardId: card.id,
         type: 'purchase',
         status: 'completed',
