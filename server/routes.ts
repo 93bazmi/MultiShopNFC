@@ -361,7 +361,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Update the card using Airtable's API directly
             const airtableFields = {
               balance: card.balance - amount,
-              lastUsed: new Date().toISOString()
+              lastUsed: new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })
             };
             
             // Airtable expects fields to be passed directly, not wrapped in a fields object
@@ -417,7 +417,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               status: 'completed',
               previousBalance: card.balance,
               newBalance: card.balance - amount,
-              timestamp: new Date().toISOString()
+              timestamp: new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })
             };
             
             // Create the transaction directly
@@ -431,7 +431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               status: 'completed',
               previousBalance: card.balance,
               newBalance: card.balance - amount,
-              timestamp: new Date()
+              timestamp: new Date(new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }))
             };
             console.log('Successfully created transaction in Airtable');
           } catch (directTransactionError) {
@@ -463,7 +463,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: 'completed',
           previousBalance: card.balance,
           newBalance: card.balance - amount,
-          timestamp: new Date()
+          timestamp: new Date(new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }))
         };
         console.log(`Using fallback transaction with ID ${transaction.id}`);
       }
