@@ -29,7 +29,7 @@ const NFCPaymentModal = ({
   const [status, setStatus] = useState("กำลังรอบัตร...");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
-  const [cardId, setCardId] = useState("8742"); // Default value, can be changed by user
+  const [cardId, setCardId] = useState(""); // ไม่กำหนดค่าเริ่มต้น ให้ผู้ใช้กรอกเอง
   const { toast } = useToast();
   const cardInputRef = useRef<HTMLInputElement>(null);
 
@@ -41,15 +41,16 @@ const NFCPaymentModal = ({
       setShowManualEntry(false);
       
       if (!showManualEntry) {
-        // Simulate NFC card detection
+        // Simulate NFC card detection progress but don't auto-process
         const interval = setInterval(() => {
           setProgress(prev => {
-            const next = Math.min(prev + 5, 100);
+            const next = Math.min(prev + 5, 75); // Only up to 75%
             
-            // When progress is at 75%, simulate a card detection
+            // When progress is at 75%, just show waiting for card
             if (prev < 75 && next >= 75) {
-              setStatus("ตรวจพบบัตร กำลังทำรายการ...");
-              processPayment();
+              setStatus("กรุณาป้อนหมายเลขบัตรด้วยตนเอง");
+              setShowManualEntry(true); // Auto-switch to manual mode instead
+              clearInterval(interval);
             }
             
             return next;
