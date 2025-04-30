@@ -491,13 +491,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           // Try to fetch shop directly from Airtable
           if ((storage as any).base) {
+            console.log(`Querying Airtable directly for Shop ID ${shopIdNum}`);
             // Get all shops from Airtable to find the one with matching ID
             const records = await (storage as any).base('Shops').select().all();
             
             for (const record of records) {
-              // Check if this record has our ID
+              // Check if this record has our ID - log each shop being checked
+              console.log(`Checking Airtable shop: ID=${record.fields.id}, Name=${record.fields.name}`);
+              
               if (record.fields.id && parseInt(record.fields.id) === shopIdNum) {
-                console.log(`Found shop in Airtable with ID ${shopIdNum}`);
+                console.log(`Found shop in Airtable with ID ${shopIdNum}: ${record.fields.name}`);
                 // Convert Airtable record to our shop format
                 shop = {
                   id: parseInt(record.fields.id),
@@ -505,7 +508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   description: record.fields.description || null,
                   ownerId: 1, // Default owner ID
                   icon: record.fields.icon || "shopping-bag",
-                  iconColor: record.fields.iconColor || "gray",
+                  iconColor: record.fields.icon || "gray", // Use icon field as color based on mapping
                   status: record.fields.status || "active"
                 };
                 break;
@@ -516,9 +519,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("Error fetching shop directly from Airtable:", airtableError);
         }
         
-        // If still not found, create a simple placeholder just to avoid errors
+        // If still not found, return error
         if (!shop) {
-          console.error(`Shop with ID ${shopIdNum} not found in Airtable`);
+          console.error(`Shop with ID ${shopIdNum} not found in Airtable or system`);
           return res.status(404).json({ message: "Shop not found" });
         }
       }
