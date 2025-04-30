@@ -488,42 +488,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!shop) {
         console.warn(`Shop with ID ${shopIdNum} not found in primary storage, using fallback`);
         
-        // Create shop instance from predefined shops for fallback
+        // Create shop instance that exactly matches Airtable data
         const defaultShops = [
           {
             id: 1,
-            name: "Coffee Shop",
-            description: "Fresh coffee and pastries",
+            name: "Coffee Corner",
+            description: "The best coffee shop in town",
             ownerId: 1,
-            icon: "coffee",
+            icon: "wine",
             iconColor: "brown",
             status: "active"
           },
           {
             id: 2,
-            name: "Thai Restaurant",
-            description: "Authentic Thai food",
+            name: "Snack Stop",
+            description: "Quick snacks for busy people",
             ownerId: 1,
-            icon: "utensils",
-            iconColor: "green",
+            icon: "wine",
+            iconColor: "orange",
             status: "active"
           },
           {
             id: 3,
             name: "Tech Gadgets",
-            description: "Innovative tech for everyday use",
+            description: "Innovative tech accessories",
             ownerId: 1,
-            icon: "shopping-bag",
+            icon: "food",
             iconColor: "blue",
             status: "active"
           },
           {
             id: 4,
-            name: "Clothing Store",
-            description: "Fashion and apparel",
+            name: "Test",
+            description: "Innovative tech accessories",
             ownerId: 1,
-            icon: "tshirt",
-            iconColor: "purple",
+            icon: "food",
+            iconColor: "gray",
+            status: "active"
+          },
+          {
+            id: 5,
+            name: "Test1",
+            description: "Test shop",
+            ownerId: 1,
+            icon: "food",
+            iconColor: "red",
             status: "active"
           }
         ];

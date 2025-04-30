@@ -55,7 +55,8 @@ export const FIELD_MAPS = {
     shopId: "shopId",
     cardId: "cardId",
     timestamp: "timestamp",
-    // type field is not in Airtable, skip it
+    // Still include type in our mapping even if Airtable doesn't use it
+    type: "type",
     status: "status",
     previousBalance: "previousBalance",
     newBalance: "newBalance",
