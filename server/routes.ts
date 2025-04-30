@@ -549,10 +549,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update card balance
       let updatedCard;
       try {
-        updatedCard = await storage.updateNfcCard(card.id, {
-          balance: card.balance - amount,
-          lastUsed: new Date()
-        });
+        // Search for the card again by cardId to get the latest Airtable record ID
+        const freshAirtableCard = await storage.getNfcCardByCardId(card.cardId);
+        
+        if (freshAirtableCard && (freshAirtableCard as any).airtableRecordId) {
+          // Use the Airtable record ID directly for updates
+          console.log(`Using Airtable Record ID ${(freshAirtableCard as any).airtableRecordId} for direct update`);
+          
+          try {
+            // Update the card using Airtable's API directly
+            const airtableFields = {
+              balance: card.balance - amount,
+              lastUsed: new Date().toISOString()
+            };
+            
+            // Create a field object that Airtable expects
+            const recordFields = { fields: airtableFields };
+            
+            // Access the Airtable base from the storage implementation
+            if ((storage as any).base) {
+              const updatedRecord = await (storage as any).base('NFCCards').update(
+                (freshAirtableCard as any).airtableRecordId, 
+                recordFields
+              );
+              console.log('Successfully updated card in Airtable:', updatedRecord.fields.balance);
+            } else {
+              throw new Error('Airtable base not available');
+            }
+            
+            updatedCard = {
+              ...card,
+              balance: card.balance - amount,
+              lastUsed: new Date()
+            };
+          } catch (directUpdateError) {
+            console.error("Error with direct Airtable update:", directUpdateError);
+            throw directUpdateError;
+          }
+        } else {
+          // Fall back to regular update
+          updatedCard = await storage.updateNfcCard(card.id, {
+            balance: card.balance - amount,
+            lastUsed: new Date()
+          });
+        }
       } catch (updateError) {
         console.error("Error updating card:", updateError);
         // Create fallback updated card
@@ -567,17 +607,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create transaction record
       let transaction;
       try {
-        // Only include fields that exist in Airtable transactions table
-        transaction = await storage.createTransaction({
-          amount,
-          shopId: shopIdNum, // Use the validated shopId
-          cardId: card.id,
-          // type field removed since it doesn't exist in Airtable
-          status: 'completed',
-          previousBalance: card.balance, // บันทึกยอดเงินก่อนทำรายการ
-          newBalance: card.balance - amount, // บันทึกยอดเงินหลังทำรายการ
-          timestamp: new Date().toISOString() // Add timestamp as ISO string format
-        });
+        // Try to create transaction directly in Airtable
+        if ((storage as any).base) {
+          try {
+            // Create fields object in the format Airtable expects
+            const transactionFields = {
+              fields: {
+                amount: amount,
+                shopId: shopIdNum.toString(),
+                cardId: card.id.toString(),
+                status: 'completed',
+                previousBalance: card.balance,
+                newBalance: card.balance - amount,
+                timestamp: new Date().toISOString()
+              }
+            };
+            
+            // Create the transaction directly
+            const createdRecord = await (storage as any).base('Transactions').create(transactionFields);
+            transaction = {
+              id: parseInt(createdRecord.id) || Math.floor(Math.random() * 1000) + 1000,
+              amount,
+              shopId: shopIdNum,
+              cardId: card.id,
+              type: 'purchase', // For our interface
+              status: 'completed',
+              previousBalance: card.balance,
+              newBalance: card.balance - amount,
+              timestamp: new Date()
+            };
+            console.log('Successfully created transaction in Airtable');
+          } catch (directTransactionError) {
+            console.error("Error creating transaction directly in Airtable:", directTransactionError);
+            throw directTransactionError;
+          }
+        } else {
+          // Fall back to storage interface
+          transaction = await storage.createTransaction({
+            amount,
+            shopId: shopIdNum,
+            cardId: card.id,
+            status: 'completed',
+            previousBalance: card.balance,
+            newBalance: card.balance - amount
+          });
+        }
       } catch (transactionError) {
         console.error("Error creating transaction:", transactionError);
         // Create fallback transaction

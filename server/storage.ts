@@ -371,20 +371,51 @@ class MemStorage implements IStorage {
     console.log(`[MemStorage] Looking for shop with ID: ${id}, type: ${typeof id}`);
     console.log(`[MemStorage] Available shops:`, Array.from(this.shops.entries()));
     
-    // For ID 3, create dummy shop if not exists
-    if (id === 3 && !this.shops.has(3)) {
-      console.log(`[MemStorage] Creating dummy shop with ID 3`);
-      const dummyShop: Shop = {
+    // Create dummy shops if not exists
+    const dummyShops = [
+      {
+        id: 1,
+        name: "Coffee Shop",
+        description: "Fresh coffee and pastries",
+        ownerId: 1,
+        icon: "coffee",
+        iconColor: "brown",
+        status: "active"
+      },
+      {
+        id: 2,
+        name: "Thai Restaurant",
+        description: "Authentic Thai food",
+        ownerId: 1,
+        icon: "utensils",
+        iconColor: "green",
+        status: "active"
+      },
+      {
         id: 3,
         name: "Tech Gadgets",
         description: "Innovative tech for everyday use",
         ownerId: 1,
         icon: "shopping-bag",
         iconColor: "blue",
-        status: "active",
-        createdAt: new Date()
-      };
-      this.shops.set(3, dummyShop);
+        status: "active"
+      },
+      {
+        id: 4,
+        name: "Clothing Store",
+        description: "Fashion and apparel",
+        ownerId: 1,
+        icon: "tshirt",
+        iconColor: "purple",
+        status: "active"
+      }
+    ];
+    
+    // Check if the requested shop is one of our dummy shops
+    const dummyShop = dummyShops.find(shop => shop.id === id);
+    if (dummyShop && !this.shops.has(id)) {
+      console.log(`[MemStorage] Creating dummy shop with ID ${id}`);
+      this.shops.set(id, dummyShop);
       return dummyShop;
     }
     
