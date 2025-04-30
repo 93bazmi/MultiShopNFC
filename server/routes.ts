@@ -647,6 +647,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             amount,
             shopId: shopIdNum,
             cardId: card.id,
+            type: 'purchase', // Required field for TypeScript
             status: 'completed',
             previousBalance: card.balance,
             newBalance: card.balance - amount

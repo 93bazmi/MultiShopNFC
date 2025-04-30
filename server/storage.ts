@@ -341,10 +341,139 @@ class MemStorage implements IStorage {
     this.transactions = new Map();
     
     this.userIdCounter = 1;
-    this.shopIdCounter = 1;
+    this.shopIdCounter = 5; // Start after our predefined shops
     this.productIdCounter = 1;
     this.nfcCardIdCounter = 1;
     this.transactionIdCounter = 1;
+    
+    // Initialize with default shops
+    const defaultShops = [
+      {
+        id: 1,
+        name: "Coffee Shop",
+        description: "Fresh coffee and pastries",
+        ownerId: 1,
+        icon: "coffee",
+        iconColor: "brown",
+        status: "active"
+      },
+      {
+        id: 2,
+        name: "Thai Restaurant",
+        description: "Authentic Thai food",
+        ownerId: 1,
+        icon: "utensils",
+        iconColor: "green",
+        status: "active"
+      },
+      {
+        id: 3,
+        name: "Tech Gadgets",
+        description: "Innovative tech for everyday use",
+        ownerId: 1,
+        icon: "shopping-bag",
+        iconColor: "blue",
+        status: "active"
+      },
+      {
+        id: 4,
+        name: "Clothing Store",
+        description: "Fashion and apparel",
+        ownerId: 1,
+        icon: "tshirt",
+        iconColor: "purple",
+        status: "active"
+      }
+    ];
+    
+    // Add all default shops to the map
+    for (const shop of defaultShops) {
+      this.shops.set(shop.id, shop);
+    }
+    
+    // Add some demo products for each shop
+    this.products.set(1, {
+      id: 1,
+      name: "Coffee",
+      description: "Fresh brewed coffee",
+      price: 45,
+      shopId: 1,
+      icon: "coffee",
+      available: true
+    });
+    
+    this.products.set(2, {
+      id: 2,
+      name: "Croissant",
+      description: "Butter croissant",
+      price: 35,
+      shopId: 1,
+      icon: "bread-slice",
+      available: true
+    });
+    
+    this.products.set(3, {
+      id: 3,
+      name: "Pad Thai",
+      description: "Classic Thai noodle dish",
+      price: 89,
+      shopId: 2,
+      icon: "utensils",
+      available: true
+    });
+    
+    this.products.set(4, {
+      id: 4,
+      name: "Tom Yum Soup",
+      description: "Spicy Thai soup",
+      price: 79,
+      shopId: 2,
+      icon: "bowl-food",
+      available: true
+    });
+    
+    this.products.set(5, {
+      id: 5,
+      name: "Smartphone",
+      description: "Latest model",
+      price: 15000,
+      shopId: 3,
+      icon: "smartphone",
+      available: true
+    });
+    
+    this.products.set(6, {
+      id: 6,
+      name: "Headphones",
+      description: "Noise cancelling",
+      price: 2500,
+      shopId: 3,
+      icon: "headphones",
+      available: true
+    });
+    
+    this.products.set(7, {
+      id: 7,
+      name: "T-shirt",
+      description: "Cotton t-shirt",
+      price: 399,
+      shopId: 4,
+      icon: "shirt",
+      available: true
+    });
+    
+    this.products.set(8, {
+      id: 8,
+      name: "Jeans",
+      description: "Slim fit jeans",
+      price: 899,
+      shopId: 4,
+      icon: "scissors",
+      available: true
+    });
+    
+    // Set product counter to after our demo products
+    this.productIdCounter = 9;
   }
 
   // User operations
