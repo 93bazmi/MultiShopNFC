@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Wifi, X } from "lucide-react";
+import { Wifi, XCircle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { API } from "@/lib/airtable";
 import { useToast } from "@/hooks/use-toast";
@@ -93,7 +93,17 @@ const NFCPaymentModal = ({
         
         // Check for specific error type for card not found
         if (errorData.error === "card_not_found") {
-          throw new Error("หมายเลขบัตรไม่ถูกต้อง กรุณาตรวจสอบหมายเลขบัตรอีกครั้ง");
+          setStatus("ไม่พบบัตร NFC");
+          
+          // ปรับข้อความแสดงความผิดพลาดให้สวยงามขึ้น
+          const errorMessage = `${errorData.message}\n${errorData.details || ""}`;
+          
+          // ใช้ error object ที่มีข้อมูลเพิ่มเติม
+          const enhancedError = new Error(errorMessage);
+          (enhancedError as any).icon = <XCircle className="h-6 w-6 text-red-500" />;
+          (enhancedError as any).isCardError = true;
+          
+          throw enhancedError;
         } else {
           throw new Error(errorData.message || "การชำระเงินล้มเหลว");
         }
@@ -114,9 +124,38 @@ const NFCPaymentModal = ({
       
     } catch (error) {
       console.error("Payment error:", error);
+      // ปรับปรุงการแสดงข้อความผิดพลาด
+      const errorMessage = error instanceof Error ? error.message : "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
+      
+      // แบ่งข้อความตามบรรทัดใหม่ถ้ามี
+      const errorLines = errorMessage.split('\n');
+      
+      // ตรวจสอบว่าเป็นข้อผิดพลาดเกี่ยวกับบัตรหรือไม่
+      const isCardError = (error as any)?.isCardError;
+      
       toast({
         title: "การชำระเงินล้มเหลว",
-        description: error instanceof Error ? error.message : "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
+        description: (
+          <div className="space-y-2">
+            {isCardError && (
+              <div className="flex justify-center mb-2">
+                <XCircle className="h-12 w-12 text-red-500" />
+              </div>
+            )}
+            <div className="space-y-1">
+              {errorLines.map((line, index) => (
+                <p key={index} 
+                  className={index === 0 
+                    ? "font-semibold text-base"
+                    : "text-sm text-gray-600"
+                  }
+                >
+                  {line}
+                </p>
+              ))}
+            </div>
+          </div>
+        ),
         variant: "destructive"
       });
       setStatus("การชำระเงินล้มเหลว กรุณาลองอีกครั้ง");

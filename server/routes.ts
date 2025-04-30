@@ -540,8 +540,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // NFC Card not found, return error instead of creating new card
         console.log(`Card ID ${cardId} not found in database. Payment rejected.`);
         return res.status(404).json({ 
-          message: "หมายเลขบัตรไม่ถูกต้อง กรุณาตรวจสอบหมายเลขบัตรอีกครั้ง",
-          error: "card_not_found" 
+          message: "ไม่พบหมายเลขบัตร NFC ในระบบ",
+          error: "card_not_found",
+          details: "กรุณาตรวจสอบว่าหมายเลขบัตรถูกต้อง หรือใช้บัตรที่ลงทะเบียนในระบบแล้วเท่านั้น"
         });
       }
       
