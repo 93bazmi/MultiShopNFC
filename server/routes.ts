@@ -537,28 +537,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (!card) {
-        // Create a new card with initial balance
-        console.log(`Card ID ${cardId} not found, creating new card`);
-        try {
-          card = await storage.createNfcCard({
-            cardId: cardId,
-            balance: 100, // Give initial balance of 100 coins for demo
-            active: true
-          });
-          console.log(`New card created with ID ${card.id} and balance ${card.balance}`);
-        } catch (createError) {
-          console.error("Error creating new card in primary storage:", createError);
-          
-          // Create fallback card in memory since database operation failed
-          card = {
-            id: 999, // Use a fixed ID for fallback
-            cardId: cardId,
-            balance: 100, // Initial balance
-            active: true,
-            lastUsed: null
-          };
-          console.log(`Created fallback card with ID ${card.id} and balance ${card.balance}`);
-        }
+        // NFC Card not found, return error instead of creating new card
+        console.log(`Card ID ${cardId} not found in database. Payment rejected.`);
+        return res.status(404).json({ 
+          message: "หมายเลขบัตรไม่ถูกต้อง กรุณาตรวจสอบหมายเลขบัตรอีกครั้ง",
+          error: "card_not_found" 
+        });
       }
       
       // Check if card has enough balance

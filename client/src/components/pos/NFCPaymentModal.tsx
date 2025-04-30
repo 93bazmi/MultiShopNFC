@@ -90,7 +90,13 @@ const NFCPaymentModal = ({
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "การชำระเงินล้มเหลว");
+        
+        // Check for specific error type for card not found
+        if (errorData.error === "card_not_found") {
+          throw new Error("หมายเลขบัตรไม่ถูกต้อง กรุณาตรวจสอบหมายเลขบัตรอีกครั้ง");
+        } else {
+          throw new Error(errorData.message || "การชำระเงินล้มเหลว");
+        }
       }
       
       const result = await response.json();
