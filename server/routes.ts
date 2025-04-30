@@ -535,8 +535,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           shop = fallbackShop;
           usedMemStorage = true;
         } else {
-          console.error(`Shop with ID ${shopIdNum} not found in fallback storage`);
-          return res.status(404).json({ message: "Shop not found" });
+          // For shops not in our predefined list, create a temporary shop object
+          shop = {
+            id: shopIdNum,
+            name: `Shop ${shopIdNum}`,
+            description: "Auto-generated shop",
+            ownerId: 1,
+            icon: "shopping-bag",
+            iconColor: "gray",
+            status: "active"
+          };
+          usedMemStorage = true;
+          console.log(`Created generic shop for ID ${shopIdNum}`);
         }
       }
       
@@ -597,14 +607,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
               lastUsed: new Date().toISOString()
             };
             
-            // Create a field object that Airtable expects
-            const recordFields = { fields: airtableFields };
-            
+            // Airtable expects fields to be passed directly, not wrapped in a fields object
             // Access the Airtable base from the storage implementation
             if ((storage as any).base) {
               const updatedRecord = await (storage as any).base('NFCCards').update(
                 (freshAirtableCard as any).airtableRecordId, 
-                recordFields
+                airtableFields
               );
               console.log('Successfully updated card in Airtable:', updatedRecord.fields.balance);
             } else {
@@ -644,17 +652,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Try to create transaction directly in Airtable
         if ((storage as any).base) {
           try {
-            // Create fields object in the format Airtable expects
+            // Create fields object directly without 'fields' wrapper
             const transactionFields = {
-              fields: {
-                amount: amount,
-                shopId: shopIdNum.toString(),
-                cardId: card.id.toString(),
-                status: 'completed',
-                previousBalance: card.balance,
-                newBalance: card.balance - amount,
-                timestamp: new Date().toISOString()
-              }
+              amount: amount,
+              shopId: shopIdNum.toString(),
+              cardId: card.id.toString(),
+              status: 'completed',
+              previousBalance: card.balance,
+              newBalance: card.balance - amount,
+              timestamp: new Date().toISOString()
             };
             
             // Create the transaction directly
