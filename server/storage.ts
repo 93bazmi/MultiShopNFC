@@ -191,15 +191,63 @@ export class AirtableStorage implements IStorage {
   }
 
   async createNfcCard(card: InsertNfcCard): Promise<NfcCard> {
-    const fields = toAirtableFields('nfcCards', card);
-    const record = await this.base(TABLES.NFC_CARDS).create(fields);
-    return fromAirtableRecord('nfcCards', record) as NfcCard;
+    console.log("Creating new NFC card in Airtable:", card);
+    
+    // Set default values for required fields
+    const cardData = {
+      ...card,
+      // Set defaults for required fields if not provided
+      active: card.active !== undefined ? card.active : true,
+      balance: card.balance !== undefined ? card.balance : 0
+    };
+    
+    const fields = toAirtableFields('nfcCards', cardData);
+    console.log("Airtable fields for card creation:", fields);
+    
+    try {
+      const record = await this.base(TABLES.NFC_CARDS).create(fields);
+      return fromAirtableRecord('nfcCards', record) as NfcCard;
+    } catch (error) {
+      console.error("Airtable error creating card:", error);
+      throw error;
+    }
   }
 
   async updateNfcCard(id: number, card: Partial<NfcCard>): Promise<NfcCard> {
+    console.log("Updating NFC card in Airtable:", id, card);
     const fields = toAirtableFields('nfcCards', card);
-    const record = await this.base(TABLES.NFC_CARDS).update(id.toString(), fields);
-    return fromAirtableRecord('nfcCards', record) as NfcCard;
+    console.log("Airtable fields for card update:", fields);
+    
+    try {
+      // Try to get the existing card first to confirm it exists
+      await this.base(TABLES.NFC_CARDS).find(id.toString());
+      
+      const record = await this.base(TABLES.NFC_CARDS).update(id.toString(), fields);
+      return fromAirtableRecord('nfcCards', record) as NfcCard;
+    } catch (error) {
+      console.error("Airtable error updating card:", error);
+      // If card doesn't exist in Airtable, try creating it instead
+      if ((error as any)?.error === 'NOT_FOUND') {
+        console.log("Card not found in Airtable, attempting to create");
+        try {
+          // Get full card data first (not just the update)
+          const fullCard = await this.getNfcCard(id);
+          if (!fullCard) {
+            throw new Error(`Card with id ${id} not found`);
+          }
+          
+          // Merge update with existing data
+          const cardData = { ...fullCard, ...card };
+          const createFields = toAirtableFields('nfcCards', cardData);
+          const record = await this.base(TABLES.NFC_CARDS).create(createFields);
+          return fromAirtableRecord('nfcCards', record) as NfcCard;
+        } catch (createError) {
+          console.error("Failed to create card in Airtable:", createError);
+          throw createError;
+        }
+      }
+      throw error;
+    }
   }
 
   // Transaction operations
@@ -238,9 +286,24 @@ export class AirtableStorage implements IStorage {
   }
 
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
-    const fields = toAirtableFields('transactions', transaction);
-    const record = await this.base(TABLES.TRANSACTIONS).create(fields);
-    return fromAirtableRecord('transactions', record) as Transaction;
+    // Convert shopId and cardId to strings for Airtable compatibility
+    const transactionData = {
+      ...transaction,
+      shopId: transaction.shopId ? transaction.shopId.toString() : null,
+      cardId: transaction.cardId ? transaction.cardId.toString() : null,
+    };
+    
+    console.log("Sending transaction to Airtable:", transactionData);
+    const fields = toAirtableFields('transactions', transactionData);
+    console.log("Airtable fields:", fields);
+    
+    try {
+      const record = await this.base(TABLES.TRANSACTIONS).create(fields);
+      return fromAirtableRecord('transactions', record) as Transaction;
+    } catch (error) {
+      console.error("Airtable error creating transaction:", error);
+      throw error;
+    }
   }
 }
 
