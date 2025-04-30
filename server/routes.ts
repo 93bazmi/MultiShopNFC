@@ -567,14 +567,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create transaction record
       let transaction;
       try {
+        // Only include fields that exist in Airtable transactions table
         transaction = await storage.createTransaction({
           amount,
           shopId: shopIdNum, // Use the validated shopId
           cardId: card.id,
-          type: 'purchase',
+          // type field removed since it doesn't exist in Airtable
           status: 'completed',
           previousBalance: card.balance, // บันทึกยอดเงินก่อนทำรายการ
-          newBalance: card.balance - amount // บันทึกยอดเงินหลังทำรายการ
+          newBalance: card.balance - amount, // บันทึกยอดเงินหลังทำรายการ
+          timestamp: new Date().toISOString() // Add timestamp as ISO string format
         });
       } catch (transactionError) {
         console.error("Error creating transaction:", transactionError);
@@ -584,7 +586,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           amount,
           shopId: shopIdNum,
           cardId: card.id,
-          type: 'purchase',
+          // Note: type is needed for our interface but not for Airtable
+          type: 'purchase', 
           status: 'completed',
           previousBalance: card.balance,
           newBalance: card.balance - amount,

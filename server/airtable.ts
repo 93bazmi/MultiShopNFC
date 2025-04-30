@@ -29,14 +29,14 @@ export const FIELD_MAPS = {
     name: "name",
     description: "description",
     icon: "icon",
-    iconColor: "iconColor",
+    iconColor: "icon", // Using icon field for color
     status: "status",
-    ownerId: "ownerId",
+    ownerId: "id", // Fall back to using primary ID
   },
   products: {
     id: "id",
     name: "name",
-    description: "description",
+    description: "name", // Using name as description
     price: "price",
     shopId: "shopId",
     icon: "icon",
@@ -55,7 +55,7 @@ export const FIELD_MAPS = {
     shopId: "shopId",
     cardId: "cardId",
     timestamp: "timestamp",
-    type: "type",
+    // type field is not in Airtable, skip it
     status: "status",
     previousBalance: "previousBalance",
     newBalance: "newBalance",

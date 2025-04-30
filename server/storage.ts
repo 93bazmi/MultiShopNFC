@@ -179,8 +179,16 @@ export class AirtableStorage implements IStorage {
 
       if (records.length === 0) return undefined;
 
-      return fromAirtableRecord('nfcCards', records[0]) as NfcCard;
+      // Store Airtable record ID in the result for direct updates
+      const result = fromAirtableRecord('nfcCards', records[0]) as NfcCard;
+      // Add the Airtable record ID as a custom property for updates
+      (result as any).airtableRecordId = records[0].id;
+      
+      console.log(`Found NFC card with cardId ${cardId}, Airtable Record ID: ${(result as any).airtableRecordId}`);
+      
+      return result;
     } catch (error) {
+      console.error(`Error fetching card by cardId ${cardId}:`, error);
       return undefined;
     }
   }
@@ -219,33 +227,37 @@ export class AirtableStorage implements IStorage {
     console.log("Airtable fields for card update:", fields);
     
     try {
-      // Try to get the existing card first to confirm it exists
-      await this.base(TABLES.NFC_CARDS).find(id.toString());
+      // Check if this card has an Airtable Record ID
+      const existingCard = await this.getNfcCard(id);
+      if (!existingCard) {
+        throw new Error(`Card with id ${id} not found`);
+      }
       
-      const record = await this.base(TABLES.NFC_CARDS).update(id.toString(), fields);
-      return fromAirtableRecord('nfcCards', record) as NfcCard;
+      // First try to find the card by cardId for direct Airtable ID
+      const recordsByCardId = await this.base(TABLES.NFC_CARDS)
+        .select({
+          filterByFormula: `{cardId} = '${existingCard.cardId}'`
+        })
+        .firstPage();
+        
+      if (recordsByCardId.length > 0) {
+        // Use the Airtable record ID directly
+        const airtableRecordId = recordsByCardId[0].id;
+        console.log(`Found card in Airtable with Record ID: ${airtableRecordId}`);
+        
+        // Update using Airtable record ID
+        const updatedRecord = await this.base(TABLES.NFC_CARDS).update(airtableRecordId, fields);
+        return fromAirtableRecord('nfcCards', updatedRecord) as NfcCard;
+      } else {
+        // Record not found in Airtable, create a new one
+        console.log("Card not found in Airtable, creating new record");
+        const fullCardData = { ...existingCard, ...card };
+        const createFields = toAirtableFields('nfcCards', fullCardData);
+        const newRecord = await this.base(TABLES.NFC_CARDS).create(createFields);
+        return fromAirtableRecord('nfcCards', newRecord) as NfcCard;
+      }
     } catch (error) {
       console.error("Airtable error updating card:", error);
-      // If card doesn't exist in Airtable, try creating it instead
-      if ((error as any)?.error === 'NOT_FOUND') {
-        console.log("Card not found in Airtable, attempting to create");
-        try {
-          // Get full card data first (not just the update)
-          const fullCard = await this.getNfcCard(id);
-          if (!fullCard) {
-            throw new Error(`Card with id ${id} not found`);
-          }
-          
-          // Merge update with existing data
-          const cardData = { ...fullCard, ...card };
-          const createFields = toAirtableFields('nfcCards', cardData);
-          const record = await this.base(TABLES.NFC_CARDS).create(createFields);
-          return fromAirtableRecord('nfcCards', record) as NfcCard;
-        } catch (createError) {
-          console.error("Failed to create card in Airtable:", createError);
-          throw createError;
-        }
-      }
       throw error;
     }
   }
