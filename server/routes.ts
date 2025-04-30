@@ -28,27 +28,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
   };
 
-  // User routes
-  app.post("/api/users", validateBody(insertUserSchema), async (req, res) => {
-    try {
-      const user = await storage.createUser(req.body);
-      res.json(user);
-    } catch (error) {
-      res.status(500).json({ message: "Error creating user" });
-    }
-  });
-
-  app.get("/api/users/:id", async (req, res) => {
-    try {
-      const user = await storage.getUser(parseInt(req.params.id));
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      res.json(user);
-    } catch (error) {
-      res.status(500).json({ message: "Error fetching user" });
-    }
-  });
+  // User routes - removed (unused in current app functionality)
 
   // Shop routes
   app.get("/api/shops", async (req, res) => {
@@ -80,80 +60,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/shops", validateBody(insertShopSchema), async (req, res) => {
-    try {
-      const shop = await storage.createShop(req.body);
-      res.json(shop);
-    } catch (error) {
-      res.status(500).json({ message: "Error creating shop" });
-    }
-  });
+  // Shop creation and update endpoints removed - not needed for core functionality
 
-  app.patch("/api/shops/:id", async (req, res) => {
-    try {
-      const shopId = parseInt(req.params.id);
-      const shop = await storage.getShop(shopId);
-      
-      if (!shop) {
-        return res.status(404).json({ message: "Shop not found" });
-      }
-      
-      const updatedShop = await storage.updateShop(shopId, req.body);
-      res.json(updatedShop);
-    } catch (error) {
-      res.status(500).json({ message: "Error updating shop" });
-    }
-  });
-
-  // Product routes
-  // Create memory fallback for products
-  const memProducts = new Map();
-  let productIdCounter = 1;
-  
-  // Helper to get demo products when Airtable fails
-  const getFallbackProducts = (shopId?: number) => {
-    if (memProducts.size === 0) {
-      // Add some demo products if none exist yet
-      [
-        { shopId: 1, name: "Coffee", price: 50, icon: "coffee", available: true, description: "Fresh brewed coffee" },
-        { shopId: 1, name: "Tea", price: 40, icon: "mug-hot", available: true, description: "Hot tea" },
-        { shopId: 1, name: "Cake", price: 80, icon: "cake", available: true, description: "Delicious cake" },
-        { shopId: 2, name: "Pad Thai", price: 120, icon: "bowl-food", available: true, description: "Classic Thai dish" },
-        { shopId: 2, name: "Green Curry", price: 150, icon: "utensils", available: true, description: "Spicy green curry" },
-        { shopId: 2, name: "Mango Sticky Rice", price: 100, icon: "rice", available: true, description: "Sweet dessert" },
-        { shopId: 3, name: "Smartphone", price: 500, icon: "mobile", available: true, description: "Latest smartphone" },
-        { shopId: 3, name: "Tablet", price: 700, icon: "tablet", available: true, description: "Portable tablet" },
-        { shopId: 3, name: "Earbuds", price: 200, icon: "headphones", available: true, description: "Wireless earbuds" }
-      ].forEach(product => {
-        const id = productIdCounter++;
-        memProducts.set(id, { ...product, id });
-      });
-    }
-    
-    const products = Array.from(memProducts.values());
-    
-    // Filter by shop if needed
-    if (shopId) {
-      return products.filter(p => p.shopId === shopId);
-    }
-    
-    return products;
-  };
+  // Product routes - simplified
   
   app.get("/api/products", async (req, res) => {
     try {
       const shopId = req.query.shopId ? parseInt(req.query.shopId as string) : undefined;
       
       let products;
-      try {
-        if (shopId) {
-          products = await storage.getProductsByShop(shopId);
-        } else {
-          products = await storage.getProducts();
-        }
-      } catch (error) {
-        console.warn("Falling back to memory storage for products:", error);
-        products = getFallbackProducts(shopId);
+      // ลดรูปการเรียกใช้ฟังก์ชัน
+      if (shopId) {
+        products = await storage.getProductsByShop(shopId);
+      } else {
+        products = await storage.getProducts();
       }
       
       res.json(products);
@@ -166,14 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/products/:id", async (req, res) => {
     try {
       const productId = parseInt(req.params.id);
-      let product;
-      
-      try {
-        product = await storage.getProduct(productId);
-      } catch (error) {
-        // Fallback to memory storage
-        product = memProducts.get(productId);
-      }
+      const product = await storage.getProduct(productId);
       
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
@@ -184,59 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/products", validateBody(insertProductSchema), async (req, res) => {
-    try {
-      let product;
-      try {
-        product = await storage.createProduct(req.body);
-      } catch (error) {
-        console.warn("Falling back to memory storage for product creation:", error);
-        // Create in memory
-        const id = productIdCounter++;
-        const newProduct = { ...req.body, id };
-        memProducts.set(id, newProduct);
-        product = newProduct;
-      }
-      
-      res.json(product);
-    } catch (error) {
-      console.error("Error creating product:", error);
-      res.status(500).json({ message: "Error creating product" });
-    }
-  });
-
-  app.patch("/api/products/:id", async (req, res) => {
-    try {
-      const productId = parseInt(req.params.id);
-      let product;
-      
-      try {
-        product = await storage.getProduct(productId);
-      } catch (error) {
-        product = memProducts.get(productId);
-      }
-      
-      if (!product) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-      
-      let updatedProduct;
-      try {
-        updatedProduct = await storage.updateProduct(productId, req.body);
-      } catch (error) {
-        console.warn("Falling back to memory storage for product update:", error);
-        // Update in memory
-        const newProduct = { ...product, ...req.body };
-        memProducts.set(productId, newProduct);
-        updatedProduct = newProduct;
-      }
-      
-      res.json(updatedProduct);
-    } catch (error) {
-      console.error("Error updating product:", error);
-      res.status(500).json({ message: "Error updating product" });
-    }
-  });
+  // Product creation and update endpoints removed - not needed for core functionality
 
   // NFC Card routes
   // Create memory fallback for NFC cards
