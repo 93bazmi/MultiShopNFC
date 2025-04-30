@@ -484,78 +484,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error(`Error getting shop with ID ${shopIdNum}:`, error);
       }
       
-      // If shop still not found, create a fallback shop
+      // If shop still not found, try to fetch directly from Airtable
       if (!shop) {
-        console.warn(`Shop with ID ${shopIdNum} not found in primary storage, using fallback`);
+        console.warn(`Shop with ID ${shopIdNum} not found in primary storage, trying direct Airtable access`);
         
-        // Create shop instance that exactly matches Airtable data
-        const defaultShops = [
-          {
-            id: 1,
-            name: "Coffee Corner",
-            description: "The best coffee shop in town",
-            ownerId: 1,
-            icon: "wine",
-            iconColor: "brown",
-            status: "active"
-          },
-          {
-            id: 2,
-            name: "Snack Stop",
-            description: "Quick snacks for busy people",
-            ownerId: 1,
-            icon: "wine",
-            iconColor: "orange",
-            status: "active"
-          },
-          {
-            id: 3,
-            name: "Tech Gadgets",
-            description: "Innovative tech accessories",
-            ownerId: 1,
-            icon: "food",
-            iconColor: "blue",
-            status: "active"
-          },
-          {
-            id: 4,
-            name: "Test",
-            description: "Innovative tech accessories",
-            ownerId: 1,
-            icon: "food",
-            iconColor: "gray",
-            status: "active"
-          },
-          {
-            id: 5,
-            name: "Test1",
-            description: "Test shop",
-            ownerId: 1,
-            icon: "food",
-            iconColor: "red",
-            status: "active"
+        try {
+          // Try to fetch shop directly from Airtable
+          if ((storage as any).base) {
+            // Get all shops from Airtable to find the one with matching ID
+            const records = await (storage as any).base('Shops').select().all();
+            
+            for (const record of records) {
+              // Check if this record has our ID
+              if (record.fields.id && parseInt(record.fields.id) === shopIdNum) {
+                console.log(`Found shop in Airtable with ID ${shopIdNum}`);
+                // Convert Airtable record to our shop format
+                shop = {
+                  id: parseInt(record.fields.id),
+                  name: record.fields.name || `Shop ${shopIdNum}`,
+                  description: record.fields.description || null,
+                  ownerId: 1, // Default owner ID
+                  icon: record.fields.icon || "shopping-bag",
+                  iconColor: record.fields.iconColor || "gray",
+                  status: record.fields.status || "active"
+                };
+                break;
+              }
+            }
           }
-        ];
+        } catch (airtableError) {
+          console.error("Error fetching shop directly from Airtable:", airtableError);
+        }
         
-        // Find the shop in our default list
-        const fallbackShop = defaultShops.find(s => s.id === shopIdNum);
-        
-        if (fallbackShop) {
-          shop = fallbackShop;
-          usedMemStorage = true;
-        } else {
-          // For shops not in our predefined list, create a temporary shop object
-          shop = {
-            id: shopIdNum,
-            name: `Shop ${shopIdNum}`,
-            description: "Auto-generated shop",
-            ownerId: 1,
-            icon: "shopping-bag",
-            iconColor: "gray",
-            status: "active"
-          };
-          usedMemStorage = true;
-          console.log(`Created generic shop for ID ${shopIdNum}`);
+        // If still not found, create a simple placeholder just to avoid errors
+        if (!shop) {
+          console.error(`Shop with ID ${shopIdNum} not found in Airtable`);
+          return res.status(404).json({ message: "Shop not found" });
         }
       }
       

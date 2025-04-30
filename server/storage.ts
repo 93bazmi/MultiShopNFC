@@ -95,8 +95,28 @@ export class AirtableStorage implements IStorage {
   }
 
   async getShops(): Promise<Shop[]> {
-    const records = await this.base(TABLES.SHOPS).select().all();
-    return records.map(record => fromAirtableRecord('shops', record) as Shop);
+    try {
+      console.log('Fetching shops from Airtable directly...');
+      const records = await this.base(TABLES.SHOPS).select().all();
+      
+      console.log(`Retrieved ${records.length} shops from Airtable`);
+      // Debug: Log raw records from Airtable
+      records.forEach(record => {
+        console.log(`Airtable shop: ID=${record.fields.id}, Name=${record.fields.name}, RecordID=${record.id}`);
+      });
+      
+      return records.map(record => {
+        const shop = fromAirtableRecord('shops', record) as Shop;
+        // Add the Airtable record ID as a custom property for updates
+        (shop as any).airtableRecordId = record.id;
+        
+        console.log(`Mapped shop: ${shop.id} - ${shop.name}`);
+        return shop;
+      });
+    } catch (error) {
+      console.error('Error getting shops from Airtable:', error);
+      return [];
+    }
   }
 
   async getShopsByOwner(ownerId: number): Promise<Shop[]> {
