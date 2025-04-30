@@ -488,9 +488,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!shop) {
         console.warn(`Shop with ID ${shopIdNum} not found in primary storage, using fallback`);
         
-        // Create a shop instance directly for demo purposes
-        if (shopIdNum === 3) {
-          shop = {
+        // Create shop instance from predefined shops for fallback
+        const defaultShops = [
+          {
+            id: 1,
+            name: "Coffee Shop",
+            description: "Fresh coffee and pastries",
+            ownerId: 1,
+            icon: "coffee",
+            iconColor: "brown",
+            status: "active"
+          },
+          {
+            id: 2,
+            name: "Thai Restaurant",
+            description: "Authentic Thai food",
+            ownerId: 1,
+            icon: "utensils",
+            iconColor: "green",
+            status: "active"
+          },
+          {
             id: 3,
             name: "Tech Gadgets",
             description: "Innovative tech for everyday use",
@@ -498,7 +516,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             icon: "shopping-bag",
             iconColor: "blue",
             status: "active"
-          };
+          },
+          {
+            id: 4,
+            name: "Clothing Store",
+            description: "Fashion and apparel",
+            ownerId: 1,
+            icon: "tshirt",
+            iconColor: "purple",
+            status: "active"
+          }
+        ];
+        
+        // Find the shop in our default list
+        const fallbackShop = defaultShops.find(s => s.id === shopIdNum);
+        
+        if (fallbackShop) {
+          shop = fallbackShop;
           usedMemStorage = true;
         } else {
           console.error(`Shop with ID ${shopIdNum} not found in fallback storage`);
