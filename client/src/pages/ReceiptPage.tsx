@@ -12,7 +12,12 @@ const ReceiptPage = () => {
     // Get transaction ID from URL
     const params = new URLSearchParams(window.location.search);
     const txId = params.get("id");
-    setTransactionId(txId);
+    if (txId) {
+      console.log("Found transaction ID in URL:", txId);
+      setTransactionId(txId);
+    } else {
+      console.log("No transaction ID found in URL");
+    }
   }, []);
 
   // Fetch transaction data
