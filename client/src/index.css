@@ -57,3 +57,48 @@
   }
 }
 
+/* Print styles for receipt */
+@media print {
+  @page {
+    size: A5 portrait; /* Set receipt size to A5 */
+    margin: 0.5cm;
+  }
+  
+  body {
+    background-color: white !important;
+    font-size: 12pt;
+    color: black;
+  }
+  
+  /* Hide elements not needed in print */
+  header, nav, .print:hidden, button, .sidebar {
+    display: none !important;
+  }
+  
+  /* Format receipt elements */
+  .print\:block {
+    display: block !important;
+  }
+  
+  .print\:hidden {
+    display: none !important;
+  }
+  
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+  
+  .print\:border {
+    border: 1px solid #ddd !important;
+  }
+  
+  /* Optimize color usage for print */
+  .print\:text-black {
+    color: black !important;
+  }
+  
+  .print\:bg-white {
+    background-color: white !important;
+  }
+}
+

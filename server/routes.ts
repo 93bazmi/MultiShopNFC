@@ -206,13 +206,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/transactions/:id", async (req, res) => {
     try {
-      const transaction = await storage.getTransaction(parseInt(req.params.id));
-      if (!transaction) {
-        return res.status(404).json({ message: "Transaction not found" });
+      const id = req.params.id;
+      let transaction;
+      
+      // Check if the ID is numeric or a transaction reference string
+      if (/^\d+$/.test(id)) {
+        // If it's a numeric id, fetch by internal ID
+        transaction = await storage.getTransaction(parseInt(id));
+      } else {
+        // Otherwise, try to find by transaction ID as string
+        const transactions = await storage.getTransactions();
+        transaction = transactions.find(t => 
+          t.id.toString() === id
+        );
       }
+      
+      if (!transaction) {
+        return res.status(404).json({ 
+          message: "Transaction not found", 
+          error: "not_found", 
+          details: `No transaction found with identifier: ${id}` 
+        });
+      }
+      
       res.json(transaction);
     } catch (error) {
-      res.status(500).json({ message: "Error fetching transaction" });
+      console.error("Error fetching transaction:", error);
+      res.status(500).json({ 
+        message: "Error fetching transaction", 
+        error: "server_error",
+        details: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
