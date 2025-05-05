@@ -18,6 +18,9 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   const [location] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Check if we're in the receipt page to hide navigation
+  const isReceiptPage = location.startsWith('/receipt');
 
   const navigation = [
     { name: "ร้านค้า", href: "/shops", icon: Store },

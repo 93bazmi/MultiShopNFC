@@ -142,17 +142,17 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
     
     // Check if we have a transaction ID to navigate to full receipt page
     if (result?.transaction?.id) {
-      // Option to show full-page receipt or dialog
-      const useFullPageReceipt = Math.random() < 0.5; // You can replace with a real setting later
+      // Use full page receipt if device is mobile or tablet for better experience
+      const isMobileOrTablet = window.innerWidth < 1024;
       
-      if (useFullPageReceipt) {
+      if (isMobileOrTablet) {
         // Navigate to full receipt page
         window.location.href = `/receipt?id=${result.transaction.id}`;
         return;
       }
     }
     
-    // Default to modal receipt
+    // Default to modal receipt on desktop
     setShowPaymentSuccess(true);
   };
 

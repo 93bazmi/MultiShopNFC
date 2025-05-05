@@ -34,10 +34,19 @@ const ReceiptPage = () => {
     queryFn: async () => {
       if (!transaction?.cardId) return null;
       
-      const response = await fetch(`${API.NFC_CARDS}?cardId=${transaction.cardId}`);
+      // Try by card ID string first if cardId is a string (NFC card ID)
+      if (typeof transaction.cardId === 'string') {
+        const response = await fetch(`${API.NFC_CARDS}/by-card-id/${transaction.cardId}`);
+        if (response.ok) {
+          return await response.json();
+        }
+      }
+      
+      // If numeric ID or previous method failed, try direct endpoint
+      const cardId = typeof transaction.cardId === 'number' ? transaction.cardId : transaction.cardId;
+      const response = await fetch(`${API.NFC_CARDS}/${cardId}`);
       if (!response.ok) throw new Error("Failed to fetch card");
-      const cards = await response.json();
-      return cards[0] || null;
+      return await response.json();
     },
     enabled: !!transaction?.cardId,
   });
