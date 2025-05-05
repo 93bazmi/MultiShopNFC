@@ -206,37 +206,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/transactions/:id", async (req, res) => {
     try {
-      const id = req.params.id;
-      let transaction;
-      
-      // Check if the ID is numeric or a transaction reference string
-      if (/^\d+$/.test(id)) {
-        // If it's a numeric id, fetch by internal ID
-        transaction = await storage.getTransaction(parseInt(id));
-      } else {
-        // Otherwise, try to find by transaction ID as string
-        const transactions = await storage.getTransactions();
-        transaction = transactions.find(t => 
-          t.id.toString() === id
-        );
-      }
-      
+      const transaction = await storage.getTransaction(parseInt(req.params.id));
       if (!transaction) {
-        return res.status(404).json({ 
-          message: "Transaction not found", 
-          error: "not_found", 
-          details: `No transaction found with identifier: ${id}` 
-        });
+        return res.status(404).json({ message: "Transaction not found" });
       }
-      
       res.json(transaction);
     } catch (error) {
-      console.error("Error fetching transaction:", error);
-      res.status(500).json({ 
-        message: "Error fetching transaction", 
-        error: "server_error",
-        details: error instanceof Error ? error.message : String(error)
-      });
+      res.status(500).json({ message: "Error fetching transaction" });
     }
   });
 
@@ -536,15 +512,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         } else {
           // Fall back to storage interface
-          // Need to ensure cardId is a number for transaction schema
-          const numericCardId = typeof card.id === 'string' 
-            ? parseInt(card.id, 10) 
-            : card.id;
-            
           transaction = await storage.createTransaction({
             amount,
             shopId: shopIdNum,
-            cardId: numericCardId, // Make sure this is a number
+            cardId: card.cardId, // Use actual NFC card ID instead of internal ID
             type: "purchase", // Required field for TypeScript
             status: "completed",
             previousBalance: card.balance,

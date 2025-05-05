@@ -139,26 +139,6 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
   const handlePaymentSuccess = (result: any) => {
     setPaymentResult(result);
     setShowNfcPayment(false);
-    
-    // Check if we have a transaction ID to navigate to full receipt page
-    if (result?.transaction?.id) {
-      // Use full page receipt if device is mobile or tablet for better experience
-      const isMobileOrTablet = window.innerWidth < 1024;
-      const txnId = result.transaction.id;
-      
-      console.log(`Payment successful. Transaction ID: ${txnId}`);
-      console.log(`Device type: ${isMobileOrTablet ? 'mobile/tablet' : 'desktop'}`);
-      
-      if (isMobileOrTablet) {
-        console.log(`Redirecting to receipt page: /receipt?id=${txnId}`);
-        // Navigate to full receipt page
-        window.location.href = `/receipt?id=${txnId}`;
-        return;
-      }
-    }
-    
-    // Default to modal receipt on desktop
-    console.log('Showing modal receipt on desktop');
     setShowPaymentSuccess(true);
   };
 
