@@ -102,7 +102,7 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
                     <h4 className="text-lg font-bold text-gray-800">{shop.name}</h4>
                   </div>
                   
-                  <div className="space-y-3 mb-4">
+                  {/* <div className="space-y-3 mb-4">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-500">รายละเอียด:</span>
                       <span className="font-medium text-gray-800 text-right">{shop.description || "ไม่มีรายละเอียด"}</span>
@@ -117,7 +117,7 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
                         {shop.status === "active" ? "เปิดให้บริการ" : "ปิดให้บริการ"}
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                   
                   <Button 
                     className="w-full mt-2 gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-300" 
