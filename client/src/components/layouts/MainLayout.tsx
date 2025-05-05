@@ -31,6 +31,15 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     return route ? route.name : "หน้า";
   };
 
+  // If this is the receipt page, use a simplified layout without navigation
+  if (isReceiptPage) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {children}
+      </div>
+    );
+  }
+  
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
       {/* Mobile menu button */}

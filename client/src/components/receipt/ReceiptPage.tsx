@@ -15,9 +15,9 @@ const ReceiptPage = ({ paymentResult, onBack }: ReceiptPageProps) => {
   }, []);
 
   // Format date for receipt
-  const formatDate = () => {
-    const now = new Date();
-    return now.toLocaleDateString('th-TH', {
+  const formatDate = (dateObj?: Date) => {
+    const date = dateObj || new Date();
+    return date.toLocaleDateString('th-TH', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -71,7 +71,9 @@ const ReceiptPage = ({ paymentResult, onBack }: ReceiptPageProps) => {
             <Store className="h-5 w-5 text-primary mr-2" />
             <span className="font-medium">{paymentResult.merchant?.name || "ร้านค้า NFC"}</span>
           </div>
-          <p className="text-center text-sm text-gray-500 mt-1">{formatDate()}</p>
+          <p className="text-center text-sm text-gray-500 mt-1">
+            {formatDate(paymentResult.transaction?.timestamp ? new Date(paymentResult.transaction.timestamp) : undefined)}
+          </p>
         </div>
 
         {/* Receipt Content */}

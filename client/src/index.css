@@ -2,6 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Print styles */
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+  
+  /* Hide navigation and UI elements when printing */
+  header, footer, nav, .print:hidden {
+    display: none !important;
+  }
+  
+  /* Ensure receipt is centered */
+  .print\:p-0 {
+    padding: 0 !important;
+  }
+  
+  /* Remove shadows and backgrounds */
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+  
+  /* Adjust font sizes for better print results */
+  .print\:text-xl {
+    font-size: 1.25rem !important;
+  }
+  
+  .print\:w-12 {
+    width: 3rem !important;
+  }
+  
+  .print\:h-12 {
+    height: 3rem !important;
+  }
+  
+  .print\:w-6 {
+    width: 1.5rem !important;
+  }
+  
+  .print\:h-6 {
+    height: 1.5rem !important;
+  }
+}
+
 :root {
       --background: 0 0% 100%;
 --foreground: 20 14.3% 4.1%;
