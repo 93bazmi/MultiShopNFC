@@ -139,6 +139,20 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
   const handlePaymentSuccess = (result: any) => {
     setPaymentResult(result);
     setShowNfcPayment(false);
+    
+    // Check if we have a transaction ID to navigate to full receipt page
+    if (result?.transaction?.id) {
+      // Option to show full-page receipt or dialog
+      const useFullPageReceipt = Math.random() < 0.5; // You can replace with a real setting later
+      
+      if (useFullPageReceipt) {
+        // Navigate to full receipt page
+        window.location.href = `/receipt?id=${result.transaction.id}`;
+        return;
+      }
+    }
+    
+    // Default to modal receipt
     setShowPaymentSuccess(true);
   };
 
