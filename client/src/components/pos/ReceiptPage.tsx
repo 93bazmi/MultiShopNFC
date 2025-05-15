@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Printer, Download, Share2, ArrowLeft } from "lucide-react";
 
 interface ReceiptPageProps {
   paymentResult: any;
   onClose: () => void;
-  onCompleteClose: () => void; // ปิดทั้งหมด
+  onCompleteClose: () => void;
 }
 
 const ReceiptPage: React.FC<ReceiptPageProps> = ({ 
@@ -13,6 +13,8 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
   onClose,
   onCompleteClose
 }) => {
+  const receiptRef = useRef<HTMLDivElement>(null);
+
   // Check if payment result exists to avoid errors
   if (!paymentResult) {
     return (
@@ -26,37 +28,7 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
   }
 
   const printReceipt = () => {
-    // กำหนดสไตล์พิเศษสำหรับการพิมพ์
-    const style = document.createElement('style');
-    style.id = 'print-style';
-    style.innerHTML = `
-      @page {
-        size: A4;
-        margin: 10mm;
-      }
-      @media print {
-        body {
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-        }
-        .receipt-page {
-          page-break-inside: avoid;
-          break-inside: avoid;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-    
-    // ทำการพิมพ์
     window.print();
-    
-    // ลบสไตล์หลังจากพิมพ์เสร็จ
-    setTimeout(() => {
-      const printStyle = document.getElementById('print-style');
-      if (printStyle) {
-        printStyle.remove();
-      }
-    }, 1000);
   };
 
   const downloadReceipt = () => {
@@ -87,10 +59,41 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-white z-50 overflow-y-auto print:relative print:inset-auto print:overflow-visible">
-      <div className="flex flex-col min-h-screen print:min-h-0">
+    <div className="fixed inset-0 bg-white z-50 overflow-y-auto print:static print:overflow-visible">
+      {/* ส่วนที่จะปรากฏเฉพาะเวลาพิมพ์ */}
+      <style type="text/css" media="print">
+        {`
+          @page {
+            size: A4;
+            margin: 0;
+            page-break-after: always;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+          }
+          .print-only {
+            display: block !important;
+          }
+          .no-print {
+            display: none !important;
+          }
+          .receipt-page {
+            page-break-after: always;
+            page-break-inside: avoid;
+          }
+          /* ทำให้หน้าที่ 3 ไม่แสดง */
+          @media print {
+            .receipt-page:nth-child(n+3) {
+              display: none !important;
+            }
+          }
+        `}
+      </style>
+
+      <div className="flex flex-col min-h-screen print:block print:min-h-0">
         {/* Header with back button - hidden when printing */}
-        <div className="bg-gray-50 p-4 print:hidden">
+        <div className="bg-gray-50 p-4 print:hidden no-print">
           <div className="max-w-md mx-auto flex justify-between items-center">
             <Button variant="ghost" onClick={onClose} className="flex items-center">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -123,8 +126,12 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
         </div>
 
         {/* Receipt Content */}
-        <div className="flex-grow flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white p-6 rounded-lg border border-gray-200 print:border-0 print:shadow-none receipt-page">
+        <div className="flex-grow flex items-center justify-center p-4 print:block print:p-0">
+          {/* ใบเสร็จที่จะพิมพ์ - หน้าที่ 1 */}
+          <div 
+            ref={receiptRef}
+            className="max-w-md w-full mx-auto bg-white p-6 rounded-lg border border-gray-200 print:border-0 print:shadow-none print:max-w-full receipt-page"
+          >
             {/* Receipt Header */}
             <div className="text-center mb-4">
               <h1 className="text-xl font-bold text-gray-800">ร้านค้า</h1>
@@ -210,7 +217,7 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
             </div>
 
             {/* Close button (only visible when not printing) */}
-            <div className="mt-6 print:hidden">
+            <div className="mt-6 print:hidden no-print">
               <Button 
                 variant="default"
                 className="w-full"
@@ -218,6 +225,86 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
               >
                 ปิด
               </Button>
+            </div>
+          </div>
+
+          {/* สำเนาใบเสร็จ - หน้าที่ 2 (แสดงเฉพาะตอนพิมพ์) */}
+          <div className="hidden print:block max-w-md w-full mx-auto bg-white p-6 mt-4 receipt-page">
+            <div className="text-center mb-4">
+              <h1 className="text-xl font-bold text-gray-800">ร้านค้า</h1>
+              <p className="text-sm text-gray-500 mt-1">(สำเนา)</p>
+            </div>
+
+            <div className="border-t border-dashed border-gray-300 my-4"></div>
+
+            <div className="text-center mb-4">
+              <h2 className="text-lg font-semibold">ใบเสร็จรับเงิน</h2>
+              <p className="text-gray-500 text-sm">
+                วันที่: {formatDate(paymentResult.transaction?.timestamp)}
+              </p>
+              <p className="text-gray-500 text-sm">
+                เลขที่อ้างอิง: {paymentResult.transaction?.id || "ไม่มีข้อมูล"}
+              </p>
+            </div>
+
+            <div className="bg-gray-50 p-3 rounded-md mb-4">
+              <div className="flex justify-between">
+                <span className="text-gray-600">หมายเลขบัตร:</span>
+                <span className="font-medium">#{paymentResult.card?.cardId || "ไม่ทราบ"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">ประเภทบัตร:</span>
+                <span className="font-medium">{paymentResult.card?.type || "บัตรเติมเงิน"}</span>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <h3 className="text-md font-semibold mb-2">รายการสินค้า</h3>
+              {paymentResult.cart && paymentResult.cart.length > 0 ? (
+                <div className="space-y-2">
+                  {paymentResult.cart.map((item: any, index: number) => (
+                    <div key={`copy-${index}`} className="flex justify-between py-2 border-b border-gray-100">
+                      <div className="flex-1">
+                        <span className="text-gray-800">{item.product.name}</span>
+                        <span className="text-gray-500 text-sm ml-2">x{item.quantity}</span>
+                      </div>
+                      <span className="text-gray-800">{item.product.price * item.quantity} เหรียญ</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-2 text-gray-500 text-center italic">ไม่มีข้อมูลรายการสินค้า</div>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <h3 className="text-md font-semibold mb-2">รายละเอียดการชำระเงิน</h3>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">ยอดเดิม:</span>
+                <span className="text-gray-800">
+                  {paymentResult.transaction?.previousBalance !== undefined ? 
+                  `${paymentResult.transaction.previousBalance} เหรียญ` : "ไม่มีข้อมูล"}
+                </span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">ยอดเงินที่ชำระ:</span>
+                <span className="font-bold text-gray-800">
+                  {paymentResult.transaction?.amount || 0} เหรียญ
+                </span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-gray-600">ยอดคงเหลือ:</span>
+                <span className="font-bold text-emerald-600">
+                  {paymentResult.remainingBalance || 0} เหรียญ
+                </span>
+              </div>
+            </div>
+
+            <div className="border-t border-dashed border-gray-300 my-4"></div>
+
+            <div className="text-center mb-4">
+              <p className="text-gray-700">ขอบคุณที่ใช้บริการ</p>
+              <p className="text-xs text-gray-500 mt-1">เอกสารนี้เป็นสำเนาการชำระเงิน</p>
             </div>
           </div>
         </div>
