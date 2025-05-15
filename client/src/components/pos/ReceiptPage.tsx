@@ -131,7 +131,7 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
               <h3 className="text-md font-semibold mb-2">รายการสินค้า</h3>
               {paymentResult.cart && paymentResult.cart.length > 0 ? (
                 <div className="space-y-2">
-                  {paymentResult.cart.map((item, index) => (
+                  {paymentResult.cart.map((item: any, index: number) => (
                     <div key={index} className="flex justify-between py-2 border-b border-gray-100">
                       <div className="flex-1">
                         <span className="text-gray-800">{item.product.name}</span>

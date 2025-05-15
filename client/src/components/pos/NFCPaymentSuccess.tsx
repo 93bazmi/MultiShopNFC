@@ -38,6 +38,21 @@ const NFCPaymentSuccess = ({
           </div>
 
           <div className="border border-gray-200 rounded-lg p-4 mb-6">
+            {/* รายการสินค้า */}
+            {paymentResult.cart && paymentResult.cart.length > 0 && (
+              <div className="border-b border-gray-200 mb-3 pb-2">
+                <div className="text-left mb-1 font-medium">รายการสินค้า:</div>
+                {paymentResult.cart.map((item: any, index: number) => (
+                  <div key={index} className="flex justify-between text-sm">
+                    <span>
+                      {item.product.name} x{item.quantity}
+                    </span>
+                    <span>{item.product.price * item.quantity} เหรียญ</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            
             <div className="flex justify-between mb-2">
               <span className="text-gray-600">ยอดเงินที่ชำระ:</span>
               <span className="font-bold text-gray-800">
