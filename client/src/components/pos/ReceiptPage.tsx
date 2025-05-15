@@ -40,7 +40,7 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
   };
 
   // Format date and time in Thai locale
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string | Date | undefined) => {
     try {
       const date = new Date(dateString || new Date());
       return new Intl.DateTimeFormat('th-TH', {
@@ -126,8 +126,29 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
               </div>
             </div>
 
+            {/* Items Purchased (New section) */}
+            <div className="mb-4">
+              <h3 className="text-md font-semibold mb-2">รายการสินค้า</h3>
+              {paymentResult.cart && paymentResult.cart.length > 0 ? (
+                <div className="space-y-2">
+                  {paymentResult.cart.map((item, index) => (
+                    <div key={index} className="flex justify-between py-2 border-b border-gray-100">
+                      <div className="flex-1">
+                        <span className="text-gray-800">{item.product.name}</span>
+                        <span className="text-gray-500 text-sm ml-2">x{item.quantity}</span>
+                      </div>
+                      <span className="text-gray-800">{item.product.price * item.quantity} เหรียญ</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-2 text-gray-500 text-center italic">ไม่มีข้อมูลรายการสินค้า</div>
+              )}
+            </div>
+
             {/* Transaction Details */}
             <div className="mb-4">
+              <h3 className="text-md font-semibold mb-2">รายละเอียดการชำระเงิน</h3>
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">ยอดเดิม:</span>
                 <span className="text-gray-800">

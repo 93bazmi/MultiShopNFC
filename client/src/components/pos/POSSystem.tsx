@@ -139,7 +139,13 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
 
   // Handle NFC payment success
   const handlePaymentSuccess = (result: any) => {
-    setPaymentResult(result);
+    // เพิ่มรายการสินค้าลงในผลลัพธ์การชำระเงิน
+    const resultWithCart = {
+      ...result,
+      cart: cart
+    };
+    
+    setPaymentResult(resultWithCart);
     setShowNfcPayment(false);
     setShowPaymentSuccess(true);
   };
