@@ -523,10 +523,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         } else {
           // Fall back to storage interface
+          // Convert cardId (string) to an integer for the transaction
+          const numericCardId = parseInt(card.id.toString());
+          
           transaction = await storage.createTransaction({
             amount,
             shopId: shopIdNum,
-            cardId: card.cardId, // Use actual NFC card ID instead of internal ID
+            cardId: numericCardId, // Use numeric ID for database schema compatibility
             type: "purchase", // Required field for TypeScript
             status: "completed",
             previousBalance: card.balance,

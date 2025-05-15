@@ -185,7 +185,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
               <span>ระบบขายสินค้า - {activeShop?.name || "ร้านค้า"}</span>
@@ -210,7 +210,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
               </div>
 
               {isLoading ? (
-                <div className="grid grid-cols-2 gap-3 h-96 overflow-y-auto">
+                <div className="grid grid-cols-2 gap-3 max-h-[40vh] md:max-h-[60vh] overflow-y-auto">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
                     <div key={i} className="border border-gray-200 rounded-lg p-3">
                       <Skeleton className="h-16 w-full rounded-lg mb-2" />
@@ -220,10 +220,10 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-3 h-96 overflow-y-auto">
+                <div className="grid grid-cols-2 gap-3 max-h-[40vh] md:max-h-[60vh] overflow-y-auto">
                   {filteredProducts.length === 0 ? (
-                    <div className="col-span-2 flex flex-col items-center justify-center h-full text-gray-500">
-                      <ChevronsLeft className="h-12 w-12 mb-2" />
+                    <div className="col-span-2 flex flex-col items-center justify-center h-40 md:h-60 text-gray-500">
+                      <ChevronsLeft className="h-8 w-8 md:h-12 md:w-12 mb-2" />
                       <p>ไม่พบสินค้า</p>
                     </div>
                   ) : (
@@ -233,10 +233,10 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
                         className="border border-gray-200 rounded-lg p-3 cursor-pointer hover:bg-gray-50"
                         onClick={() => addToCart(product)}
                       >
-                        <div className="mb-2 bg-gray-100 rounded-lg p-2 flex items-center justify-center h-16">
+                        <div className="mb-2 bg-gray-100 rounded-lg p-2 flex items-center justify-center h-12 md:h-16">
                           {getProductIcon(product)}
                         </div>
-                        <div className="text-sm font-medium text-gray-800 mb-1">{product.name}</div>
+                        <div className="text-sm font-medium text-gray-800 mb-1 truncate">{product.name}</div>
                         <div className="text-xs text-gray-500">{product.price} Coins</div>
                       </div>
                     ))
@@ -250,25 +250,25 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
               {/* Cart */}
               <div className="border border-gray-200 rounded-lg p-4 mb-4">
                 <h4 className="text-md font-medium text-gray-800 mb-3">รายการสั่งซื้อ</h4>
-                <div className="h-48 overflow-y-auto mb-3">
+                <div className="max-h-[25vh] md:max-h-[30vh] overflow-y-auto mb-3">
                   {cart.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                    <div className="flex flex-col items-center justify-center h-[15vh] md:h-[20vh] text-gray-500">
                       <p>ตะกร้าว่างเปล่า</p>
                       <p className="text-xs mt-1">เลือกสินค้าจากรายการด้านซ้าย</p>
                     </div>
                   ) : (
                     cart.map((item) => (
                       <div key={item.product.id} className="flex justify-between items-center border-b border-gray-100 py-2">
-                        <div className="flex items-center">
-                          <div className="bg-gray-100 h-8 w-8 rounded-full flex items-center justify-center mr-2">
+                        <div className="flex items-center max-w-[50%]">
+                          <div className="bg-gray-100 h-8 w-8 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
                             {getProductIcon(item.product)}
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-800">{item.product.name}</p>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-800 truncate">{item.product.name}</p>
                             <p className="text-xs text-gray-500">{item.product.price} Coins</p>
                           </div>
                         </div>
-                        <div className="flex items-center">
+                        <div className="flex items-center flex-shrink-0">
                           <Input
                             type="number"
                             value={item.quantity}

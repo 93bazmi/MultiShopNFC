@@ -57,3 +57,27 @@
   }
 }
 
+/* แก้ไขปัญหาการเลื่อนหน้าจอบนมือถือ */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+[data-state="open"] .dialog-content {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* ปรับแต่ง dialog component ให้สามารถเลื่อนได้ */
+.Dialog, 
+[role="dialog"] {
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
