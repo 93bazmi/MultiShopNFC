@@ -6,18 +6,12 @@ interface NFCPaymentSuccessProps {
   open: boolean;
   onClose: () => void;
   paymentResult: any;
-  onPrintReceipt: () => void; // เพิ่ม prop ใหม่
 }
 
-const NFCPaymentSuccess = ({ 
-  open, 
-  onClose, 
-  paymentResult,
-  onPrintReceipt // รับ prop ใหม่
-}: NFCPaymentSuccessProps) => {
-  // Print receipt
-  const handlePrintReceipt = () => {
-    onPrintReceipt(); // เรียกใช้ฟังก์ชันที่รับมาจาก prop
+const NFCPaymentSuccess = ({ open, onClose, paymentResult }: NFCPaymentSuccessProps) => {
+  // Print receipt (not implemented, just for demo)
+  const printReceipt = () => {
+    window.print();
   };
 
   if (!paymentResult) return null;
@@ -36,7 +30,7 @@ const NFCPaymentSuccess = ({
             <h3 className="text-xl font-bold text-gray-800 mb-2">การชำระเงินสำเร็จ</h3>
             <p className="text-gray-600">การชำระเงินของคุณเสร็จสมบูรณ์แล้ว</p>
           </div>
-
+          
           <div className="border border-gray-200 rounded-lg p-4 mb-6">
             <div className="flex justify-between mb-2">
               <span className="text-gray-600">ยอดเงินที่ชำระ:</span>
@@ -64,7 +58,7 @@ const NFCPaymentSuccess = ({
               </span>
             </div>
           </div>
-
+          
           <div className="flex space-x-4">
             <Button 
               variant="outline"
@@ -75,7 +69,7 @@ const NFCPaymentSuccess = ({
             </Button>
             <Button 
               className="flex-1"
-              onClick={handlePrintReceipt}
+              onClick={printReceipt}
             >
               <Printer className="mr-2 h-4 w-4" />
               พิมพ์ใบเสร็จ

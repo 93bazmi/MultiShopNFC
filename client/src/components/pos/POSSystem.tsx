@@ -9,7 +9,6 @@ import { useQuery } from "@tanstack/react-query";
 import { API } from "@/lib/airtable";
 import NFCPaymentModal from "./NFCPaymentModal";
 import NFCPaymentSuccess from "./NFCPaymentSuccess";
-import ReceiptPage from "./ReceiptPage"; // เพิ่ม import
 import { cn } from "@/lib/utils";
 
 interface POSSystemProps {
@@ -30,7 +29,6 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
   const [showNfcPayment, setShowNfcPayment] = useState(false);
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
   const [paymentResult, setPaymentResult] = useState<any>(null);
-  const [showReceiptPage, setShowReceiptPage] = useState(false); // เพิ่ม state
 
   // Fetch products for the active shop
   const { data: products, isLoading } = useQuery({
@@ -61,7 +59,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
   const addToCart = (product: Product) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.product.id === product.id);
-
+      
       if (existingItem) {
         return prevCart.map(item => 
           item.product.id === product.id 
@@ -82,7 +80,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
   // Update item quantity
   const updateQuantity = (productId: number, quantity: number) => {
     if (quantity < 1) return;
-
+    
     setCart(prevCart => 
       prevCart.map(item => 
         item.product.id === productId 
@@ -121,12 +119,12 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
       alert("กรุณาเลือกร้านค้าก่อนชำระเงิน");
       return;
     }
-
+    
     if (cart.length === 0) {
       alert("กรุณาเลือกสินค้าก่อนชำระเงิน");
       return;
     }
-
+    
     if (paymentMethod === "nfc") {
       console.log("Processing payment for shop ID:", activeShop.id);
       setShowNfcPayment(true);
@@ -139,48 +137,18 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
 
   // Handle NFC payment success
   const handlePaymentSuccess = (result: any) => {
-    // เพิ่มรายการสินค้าลงในผลลัพธ์การชำระเงิน
-    const resultWithCart = {
-      ...result,
-      cart: cart
-    };
-    
-    setPaymentResult(resultWithCart);
+    setPaymentResult(result);
     setShowNfcPayment(false);
     setShowPaymentSuccess(true);
-  };
-
-  // เพิ่มฟังก์ชันสำหรับการแสดงใบเสร็จ
-  const handleShowReceipt = () => {
-    setShowReceiptPage(true);
-    setShowPaymentSuccess(false); // ปิด popup แสดงผลการชำระเงิน
-    onClose(); // ปิด dialog ของ POSSystem
   };
 
   // Close all modals and reset
   const handleCloseAll = () => {
     setShowNfcPayment(false);
     setShowPaymentSuccess(false);
-    setShowReceiptPage(false); // เพิ่มบรรทัดนี้
     setCart([]);
     onClose();
   };
-
-  // เพิ่มฟังก์ชันสำหรับกลับจากหน้าใบเสร็จ
-  const handleCloseReceipt = () => {
-    setShowReceiptPage(false);
-  };
-
-  // ถ้ากำลังแสดงหน้าใบเสร็จ ให้แสดงเฉพาะหน้าใบเสร็จ
-  if (showReceiptPage) {
-    return (
-      <ReceiptPage
-        paymentResult={paymentResult}
-        onClose={handleCloseReceipt}
-        onCompleteClose={handleCloseAll}
-      />
-    );
-  }
 
   return (
     <>
@@ -189,10 +157,10 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
               <span>ระบบขายสินค้า - {activeShop?.name || "ร้านค้า"}</span>
-
+              
             </DialogTitle>
           </DialogHeader>
-
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
             {/* Left Side - Products */}
             <div className="border border-gray-200 rounded-lg p-4">
@@ -208,7 +176,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
                   <Search className="h-4 w-4 text-gray-400 absolute right-3 top-2.5" />
                 </div>
               </div>
-
+              
               {isLoading ? (
                 <div className="grid grid-cols-2 gap-3 h-96 overflow-y-auto">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -244,7 +212,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
                 </div>
               )}
             </div>
-
+            
             {/* Right Side - Cart & Payment */}
             <div>
               {/* Cart */}
@@ -304,7 +272,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
                   </div>
                 </div>
               </div>
-
+              
               {/* Payment */}
               <div className="border border-gray-200 rounded-lg p-4">
                 <h4 className="text-md font-medium text-gray-800 mb-3">วิธีการชำระเงิน</h4>
@@ -349,10 +317,9 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
 
       {/* Payment Success Modal */}
       <NFCPaymentSuccess
-        open={showPaymentSuccess && !showReceiptPage} // ปรับเงื่อนไขการแสดง
+        open={showPaymentSuccess}
         onClose={handleCloseAll}
         paymentResult={paymentResult}
-        onPrintReceipt={handleShowReceipt} // เพิ่ม prop ใหม่
       />
     </>
   );
