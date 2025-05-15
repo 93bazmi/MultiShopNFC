@@ -55,10 +55,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/shops/:id", async (req, res) => {
     try {
-      const shop = await storage.getShop(parseInt(req.params.id));
+      const shopId = parseInt(req.params.id);
+      let shop;
+      
+      try {
+        // First try to get from storage
+        shop = await storage.getShop(shopId);
+      } catch (error) {
+        console.error(`Error getting shop with ID ${shopId} from storage:`, error);
+      }
+      
+      // If shop not found in storage, try Airtable
+      if (!shop && (storage as any).base) {
+        console.log(`Looking for shop with ID ${shopId} in Airtable...`);
+        const records = await (storage as any).base("Shops").select({
+          filterByFormula: `{id} = '${shopId}'`
+        }).all();
+        
+        if (records.length > 0) {
+          const record = records[0];
+          shop = {
+            id: parseInt(record.fields.id),
+            name: record.fields.name,
+            description: record.fields.description || null,
+            ownerId: 1, // Default owner
+            icon: record.fields.icon || "shopping-bag",
+            iconColor: record.fields.iconColor || "blue",
+            status: record.fields.status || "active",
+          };
+          console.log(`Found shop in Airtable: ${shop.name}`);
+        }
+      }
+      
       if (!shop) {
         return res.status(404).json({ message: "Shop not found" });
       }
+      
       res.json(shop);
     } catch (error) {
       res.status(500).json({ message: "Error fetching shop" });

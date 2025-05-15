@@ -17,19 +17,19 @@ const ShopDetailPage = () => {
 
   // Fetch shop
   const { data: shop, isLoading: shopLoading } = useQuery({
-    queryKey: [`${API.SHOPS}/${shopId}`],
+    queryKey: [`/api/shops/${shopId}`],
     enabled: !!shopId
   });
 
   // Fetch products
-  const { data: products, isLoading: productsLoading } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: [API.PRODUCTS],
   });
 
   // Filter products for this shop
-  const shopProducts = products?.filter((product: Product) => 
-    product.shopId === shopId
-  ) || [];
+  const shopProducts = Array.isArray(products) 
+    ? products.filter((product: Product) => product.shopId === shopId) 
+    : [];
 
   // Get icon for shop
   const getShopIcon = (shop: Shop) => {
@@ -116,6 +116,9 @@ const ShopDetailPage = () => {
       </div>
     );
   }
+  
+  // TypeScript safety for shop object
+  const shopData = shop as Shop;
 
   return (
     <>
@@ -134,18 +137,18 @@ const ShopDetailPage = () => {
               <div className={cn(
                 "h-16 w-16 md:h-20 md:w-20 rounded-full flex items-center justify-center mr-4 mb-4 md:mb-0",
                 "bg-gradient-to-br", 
-                getIconBgColor(shop)
+                getIconBgColor(shopData)
               )}>
-                {getShopIcon(shop)}
+                {getShopIcon(shopData)}
               </div>
               <div>
-                <h1 className="text-xl md:text-2xl font-bold text-white mb-1">{shop.name}</h1>
-                <p className="text-blue-100">{shop.description || "ไม่มีรายละเอียด"}</p>
+                <h1 className="text-xl md:text-2xl font-bold text-white mb-1">{shopData.name}</h1>
+                <p className="text-blue-100">{shopData.description || "ไม่มีรายละเอียด"}</p>
                 <div className={cn(
                   "inline-block px-3 py-1 rounded-full text-xs font-semibold mt-2",
-                  shop.status === "active" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                  shopData.status === "active" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
                 )}>
-                  {shop.status === "active" ? "เปิดให้บริการ" : "ปิดให้บริการ"}
+                  {shopData.status === "active" ? "เปิดให้บริการ" : "ปิดให้บริการ"}
                 </div>
               </div>
             </div>
@@ -207,7 +210,7 @@ const ShopDetailPage = () => {
       <POSSystem 
         open={showPOS} 
         onClose={() => setShowPOS(false)} 
-        activeShop={shop}
+        activeShop={shopData}
       />
     </>
   );
