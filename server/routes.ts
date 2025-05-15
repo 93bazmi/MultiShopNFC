@@ -472,7 +472,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const transactionFields = {
               amount: amount,
               shopId: shopIdNum.toString(),
-              cardId: card.id.toString(),
+              cardId: card.cardId, // Use actual NFC card ID instead of internal ID
               status: "completed",
               previousBalance: card.balance,
               newBalance: card.balance - amount,
@@ -491,7 +491,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 Math.floor(Math.random() * 1000) + 1000,
               amount,
               shopId: shopIdNum,
-              cardId: card.id,
+              cardId: card.cardId, // Use actual NFC card ID instead of internal ID
               type: "purchase", // For our interface
               status: "completed",
               previousBalance: card.balance,
@@ -515,7 +515,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           transaction = await storage.createTransaction({
             amount,
             shopId: shopIdNum,
-            cardId: card.id,
+            cardId: card.cardId, // Use actual NFC card ID instead of internal ID
             type: "purchase", // Required field for TypeScript
             status: "completed",
             previousBalance: card.balance,
@@ -529,7 +529,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: Math.floor(Math.random() * 1000) + 1000,
           amount,
           shopId: shopIdNum,
-          cardId: card.id,
+          cardId: card.cardId, // Use actual NFC card ID instead of internal ID
           // Note: type is needed for our interface but not for Airtable
           type: "purchase",
           status: "completed",
