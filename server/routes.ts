@@ -263,6 +263,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Create the transaction record
+        // Make sure to use card.cardId instead of card.id for transaction records
+        if (req.body.cardId) {
+          // If this is a card transaction, fetch the card to get the cardId (NFC ID)
+          const card = await storage.getNfcCard(req.body.cardId);
+          if (card) {
+            // Use the actual NFC card ID instead of internal ID
+            req.body.cardId = card.cardId;
+          }
+        }
+        
         const transaction = await storage.createTransaction(req.body);
         res.json(transaction);
       } catch (error) {
@@ -302,6 +312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       try {
         shop = await storage.getShop(shopIdNum);
+        console.log(`Found shop via storage: ${shop?.name || 'Unknown'}`);
       } catch (error) {
         console.error(`Error getting shop with ID ${shopIdNum}:`, error);
       }

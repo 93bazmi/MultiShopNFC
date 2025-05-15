@@ -67,7 +67,7 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {shops.length === 0 ? (
               <div className="col-span-full text-center py-10 text-gray-500">
                 <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -80,7 +80,7 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
               shops.map((shop) => (
                 <div 
                   key={shop.id} 
-                  className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer relative overflow-hidden group"
+                  className="bg-white border border-gray-200 rounded-xl p-4 md:p-5 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer relative overflow-hidden group"
                   onClick={() => {
                     setSelectedShop(shop);
                     setShowPOS(true);
@@ -88,9 +88,9 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
                 >
                   <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full group-hover:bg-blue-500/20 transition-all duration-300"></div>
                   
-                  <div className="flex items-center mb-4">
+                  <div className="flex items-center mb-3 md:mb-4">
                     <div className={cn(
-                      "h-14 w-14 rounded-full flex items-center justify-center mr-4",
+                      "h-12 w-12 md:h-14 md:w-14 rounded-full flex items-center justify-center mr-3 md:mr-4",
                       "bg-gradient-to-br", 
                       shop.iconColor === "blue" ? "from-blue-500 to-blue-600" : 
                       shop.iconColor === "purple" ? "from-purple-500 to-purple-600" : 
@@ -99,19 +99,19 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
                     )}>
                       {getShopIcon(shop)}
                     </div>
-                    <h4 className="text-lg font-bold text-gray-800">{shop.name}</h4>
+                    <h4 className="text-base md:text-lg font-bold text-gray-800">{shop.name}</h4>
                   </div>
                   
-                  <div className="space-y-3 mb-4">
-                    <div className="flex justify-between text-sm">
+                  <div className="space-y-2 md:space-y-3 mb-3 md:mb-4">
+                    <div className="flex justify-between text-xs md:text-sm">
                       <span className="text-gray-500">รายละเอียด:</span>
-                      <span className="font-medium text-gray-800 text-right">{shop.description || "ไม่มีรายละเอียด"}</span>
+                      <span className="font-medium text-gray-800 text-right max-w-[150px] md:max-w-full truncate">{shop.description || "ไม่มีรายละเอียด"}</span>
                     </div>
                     
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs md:text-sm">
                       <span className="text-gray-500">สถานะ:</span>
                       <div className={cn(
-                        "px-3 py-1 rounded-full text-xs font-semibold",
+                        "px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs font-semibold",
                         shop.status === "active" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
                       )}>
                         {shop.status === "active" ? "เปิดให้บริการ" : "ปิดให้บริการ"}
@@ -120,14 +120,14 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
                   </div>
                   
                   <Button 
-                    className="w-full mt-2 gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-300" 
+                    className="w-full mt-2 gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-300 text-xs md:text-sm" 
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedShop(shop);
                       setShowPOS(true);
                     }}
                   >
-                    <CreditCard className="h-4 w-4" />
+                    <CreditCard className="h-3 w-3 md:h-4 md:w-4" />
                     ชำระเงินและเลือกสินค้า
                   </Button>
                 </div>
