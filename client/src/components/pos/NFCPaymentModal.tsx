@@ -196,37 +196,37 @@ const NFCPaymentModal = ({
     <Dialog open={open} onOpenChange={(isOpen) => {
       if (!isOpen && !isProcessing) onClose();
     }}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md p-4 md:p-6">
         <DialogHeader>
           <DialogTitle className="sr-only">การชำระเงินด้วยบัตร NFC</DialogTitle>
         </DialogHeader>
         <div className="text-center">
-          <div className="mb-6">
-            <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-              <Wifi className="text-primary text-2xl" />
+          <div className="mb-4 md:mb-6">
+            <div className="mx-auto w-12 h-12 md:w-16 md:h-16 bg-blue-100 rounded-full flex items-center justify-center mb-3 md:mb-4">
+              <Wifi className="text-primary text-xl md:text-2xl" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">ชำระเงินด้วยบัตร NFC</h3>
+            <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2">ชำระเงินด้วยบัตร NFC</h3>
             {!showManualEntry ? (
-              <p className="text-gray-600">กรุณาแตะบัตร NFC ที่เครื่องอ่านบัตรเพื่อชำระเงิน</p>
+              <p className="text-sm md:text-base text-gray-600">กรุณาแตะบัตร NFC ที่เครื่องอ่านบัตรเพื่อชำระเงิน</p>
             ) : (
-              <p className="text-gray-600">กรุณาป้อนหมายเลขบัตร NFC ของคุณ</p>
+              <p className="text-sm md:text-base text-gray-600">กรุณาป้อนหมายเลขบัตร NFC ของคุณ</p>
             )}
           </div>
           
-          <div className="border border-gray-200 rounded-lg p-4 mb-6">
+          <div className="border border-gray-200 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
             <div className="flex justify-between mb-2">
-              <span className="text-gray-600">ยอดรวม:</span>
-              <span className="font-bold text-gray-800">{amount} เหรียญ</span>
+              <span className="text-sm md:text-base text-gray-600">ยอดรวม:</span>
+              <span className="text-sm md:text-base font-bold text-gray-800">{amount} เหรียญ</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">ร้านค้า:</span>
-              <span className="text-gray-800">{shopName}</span>
+              <span className="text-sm md:text-base text-gray-600">ร้านค้า:</span>
+              <span className="text-sm md:text-base text-gray-800">{shopName}</span>
             </div>
           </div>
 
           {showManualEntry ? (
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2 text-left">
+            <div className="mb-4 md:mb-6">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2 text-left">
                 หมายเลขบัตร NFC
               </label>
               <Input
@@ -235,20 +235,20 @@ const NFCPaymentModal = ({
                 value={cardId}
                 onChange={(e) => setCardId(e.target.value)}
                 placeholder="กรอกหมายเลขบัตร"
-                className="mb-4"
+                className="mb-4 text-sm"
               />
             </div>
           ) : (
-            <div className="relative mb-6">
+            <div className="relative mb-4 md:mb-6">
               <Progress value={progress} className="h-2" />
-              <div className="mt-2 text-sm text-gray-600">{status}</div>
+              <div className="mt-2 text-xs md:text-sm text-gray-600">{status}</div>
             </div>
           )}
           
-          <div className="flex space-x-4">
+          <div className="flex space-x-3 md:space-x-4">
             <Button 
               variant="outline" 
-              className="flex-1"
+              className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10"
               onClick={onClose}
               disabled={isProcessing}
             >
@@ -256,7 +256,7 @@ const NFCPaymentModal = ({
             </Button>
             {!showManualEntry ? (
               <Button 
-                className="flex-1" 
+                className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10" 
                 onClick={handleManualEntry}
                 disabled={isProcessing}
               >
@@ -264,7 +264,7 @@ const NFCPaymentModal = ({
               </Button>
             ) : (
               <Button 
-                className="flex-1" 
+                className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10" 
                 onClick={handleProcessManualEntry}
                 disabled={isProcessing}
               >
