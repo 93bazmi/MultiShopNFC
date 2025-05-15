@@ -26,7 +26,37 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
   }
 
   const printReceipt = () => {
+    // กำหนดสไตล์พิเศษสำหรับการพิมพ์
+    const style = document.createElement('style');
+    style.id = 'print-style';
+    style.innerHTML = `
+      @page {
+        size: A4;
+        margin: 10mm;
+      }
+      @media print {
+        body {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .receipt-page {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    // ทำการพิมพ์
     window.print();
+    
+    // ลบสไตล์หลังจากพิมพ์เสร็จ
+    setTimeout(() => {
+      const printStyle = document.getElementById('print-style');
+      if (printStyle) {
+        printStyle.remove();
+      }
+    }, 1000);
   };
 
   const downloadReceipt = () => {
@@ -57,8 +87,8 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
-      <div className="flex flex-col min-h-screen">
+    <div className="fixed inset-0 bg-white z-50 overflow-y-auto print:relative print:inset-auto print:overflow-visible">
+      <div className="flex flex-col min-h-screen print:min-h-0">
         {/* Header with back button - hidden when printing */}
         <div className="bg-gray-50 p-4 print:hidden">
           <div className="max-w-md mx-auto flex justify-between items-center">
@@ -94,7 +124,7 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
 
         {/* Receipt Content */}
         <div className="flex-grow flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white p-6 rounded-lg border border-gray-200 print:border-0 print:shadow-none">
+          <div className="max-w-md w-full bg-white p-6 rounded-lg border border-gray-200 print:border-0 print:shadow-none receipt-page">
             {/* Receipt Header */}
             <div className="text-center mb-4">
               <h1 className="text-xl font-bold text-gray-800">ร้านค้า</h1>
