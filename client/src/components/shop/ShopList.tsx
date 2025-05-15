@@ -82,8 +82,7 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
                   key={shop.id} 
                   className="bg-white border border-gray-200 rounded-xl p-4 md:p-5 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer relative overflow-hidden group"
                   onClick={() => {
-                    setSelectedShop(shop);
-                    setShowPOS(true);
+                    window.location.href = `/shop/${shop.id}`;
                   }}
                 >
                   <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full group-hover:bg-blue-500/20 transition-all duration-300"></div>
@@ -119,17 +118,30 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
                     </div>
                   </div>
                   
-                  <Button 
-                    className="w-full mt-2 gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-300 text-xs md:text-sm" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedShop(shop);
-                      setShowPOS(true);
-                    }}
-                  >
-                    <CreditCard className="h-3 w-3 md:h-4 md:w-4" />
-                    ชำระเงินและเลือกสินค้า
-                  </Button>
+                  <div className="flex space-x-2">
+                    <Button 
+                      className="w-full mt-2 gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300 text-xs md:text-sm border"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `/shop/${shop.id}`;
+                      }}
+                    >
+                      <ShoppingBag className="h-3 w-3 md:h-4 md:w-4" />
+                      ดูรายละเอียด
+                    </Button>
+                    
+                    <Button 
+                      className="w-full mt-2 gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-300 text-xs md:text-sm" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedShop(shop);
+                        setShowPOS(true);
+                      }}
+                    >
+                      <CreditCard className="h-3 w-3 md:h-4 md:w-4" />
+                      ชำระเงิน
+                    </Button>
+                  </div>
                 </div>
               ))
             )}
