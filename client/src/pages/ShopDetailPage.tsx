@@ -18,7 +18,8 @@ const ShopDetailPage = () => {
   // Fetch shop
   const { data: shop, isLoading: shopLoading } = useQuery({
     queryKey: [`/api/shops/${shopId}`],
-    enabled: !!shopId
+    enabled: !!shopId,
+    retry: 3,
   });
 
   // Fetch products

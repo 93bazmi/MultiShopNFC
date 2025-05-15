@@ -87,9 +87,31 @@ export class AirtableStorage implements IStorage {
   // Shop operations
   async getShop(id: number): Promise<Shop | undefined> {
     try {
-      const record = await this.base(TABLES.SHOPS).find(id.toString());
-      return fromAirtableRecord('shops', record) as Shop;
+      console.log(`[AirtableStorage] Looking for shop with ID: ${id}`);
+      
+      // First try to find by ID directly
+      try {
+        const record = await this.base(TABLES.SHOPS).find(id.toString());
+        console.log(`[AirtableStorage] Found shop with ID ${id} by direct lookup`);
+        return fromAirtableRecord('shops', record) as Shop;
+      } catch (directError) {
+        console.log(`[AirtableStorage] Direct lookup failed, trying filter: ${directError}`);
+        
+        // If direct lookup fails, try filtering by ID field
+        const records = await this.base(TABLES.SHOPS).select({
+          filterByFormula: `{id} = '${id}'`
+        }).all();
+        
+        if (records.length > 0) {
+          console.log(`[AirtableStorage] Found shop with ID ${id} by filter`);
+          return fromAirtableRecord('shops', records[0]) as Shop;
+        }
+        
+        console.log(`[AirtableStorage] Shop with ID ${id} not found by filter either`);
+        return undefined;
+      }
     } catch (error) {
+      console.error(`[AirtableStorage] Error looking up shop with ID ${id}:`, error);
       return undefined;
     }
   }
