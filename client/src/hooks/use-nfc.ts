@@ -30,6 +30,11 @@ export function useNFC({ onRead, autoStart = false }: UseNFCOptions = {}) {
   const [lastTagId, setLastTagId] = useState<string | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
+  
+  // เพิ่มสถานะเพื่อป้องกันการอ่านบัตรซ้ำในระยะเวลาสั้นๆ
+  const [recentlyReadTags, setRecentlyReadTags] = useState<Record<string, number>>({});
+  const [isProcessing, setIsProcessing] = useState(false);
+  const debounceTimeRef = useCallback(() => 3000, []); // กำหนดเวลา 3 วินาทีในการป้องกันการอ่านซ้ำ
 
   // ตรวจสอบการรองรับ NFC
   useEffect(() => {
@@ -82,12 +87,49 @@ export function useNFC({ onRead, autoStart = false }: UseNFCOptions = {}) {
         if (event.serialNumber) {
           const serialNumber = event.serialNumber;
           console.log(`> Serial Number: ${serialNumber}`);
+          
+          // เก็บรหัสประจำตัวล่าสุด
           setLastTagId(serialNumber);
           setStatus('success');
           
+          // ตรวจสอบว่ากำลังประมวลผลอยู่หรือไม่
+          if (isProcessing) {
+            console.log(`กำลังประมวลผลข้อมูล ไม่สามารถอ่านบัตรซ้ำได้ในขณะนี้`);
+            return;
+          }
+          
+          // ตรวจสอบว่าบัตรนี้ถูกอ่านเมื่อเร็วๆ นี้หรือไม่
+          const now = Date.now();
+          const lastReadTime = recentlyReadTags[serialNumber] || 0;
+          const timeSinceLastRead = now - lastReadTime;
+          
+          // ถ้าบัตรนี้ถูกอ่านเมื่อไม่นานมานี้ (น้อยกว่า 3 วินาที) ให้ข้ามไป
+          if (lastReadTime > 0 && timeSinceLastRead < debounceTimeRef()) {
+            console.log(`ข้าม - บัตร ${serialNumber} เพิ่งถูกอ่านเมื่อ ${timeSinceLastRead}ms ที่แล้ว`);
+            return;
+          }
+          
+          // บันทึกเวลาที่อ่านบัตรนี้
+          setRecentlyReadTags(prev => ({
+            ...prev,
+            [serialNumber]: now
+          }));
+          
+          // ตั้งค่าสถานะกำลังประมวลผล
+          setIsProcessing(true);
+          
           // เรียกใช้งาน callback หากมีการกำหนด
           if (onRead) {
-            onRead(serialNumber);
+            try {
+              onRead(serialNumber);
+            } finally {
+              // ตั้งเวลาเพื่อรีเซ็ตสถานะหลังจากเสร็จสิ้น
+              setTimeout(() => {
+                setIsProcessing(false);
+              }, 500);
+            }
+          } else {
+            setIsProcessing(false);
           }
         }
       };
@@ -118,6 +160,12 @@ export function useNFC({ onRead, autoStart = false }: UseNFCOptions = {}) {
     setStatus('idle');
   }, [abortController]);
 
+  // ฟังก์ชันเคลียร์ประวัติการอ่านบัตร
+  const clearReadHistory = useCallback(() => {
+    setRecentlyReadTags({});
+    setIsProcessing(false);
+  }, []);
+  
   // คืนค่าสถานะและฟังก์ชันควบคุม
   return {
     isReading,
@@ -126,7 +174,8 @@ export function useNFC({ onRead, autoStart = false }: UseNFCOptions = {}) {
     lastTagId,
     error,
     startReading,
-    stopReading
+    stopReading,
+    clearReadHistory
   };
 }
 
