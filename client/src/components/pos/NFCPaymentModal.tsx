@@ -26,7 +26,7 @@ const NFCPaymentModal = ({
   onSuccess 
 }: NFCPaymentModalProps) => {
   const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState("กำลังรอบัตร...");
+  const [status, setStatus] = useState("Reading card...");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [cardId, setCardId] = useState(""); // ไม่กำหนดค่าเริ่มต้น ให้ผู้ใช้กรอกเอง
@@ -36,7 +36,7 @@ const NFCPaymentModal = ({
   useEffect(() => {
     if (open) {
       setProgress(0);
-      setStatus("กำลังรอบัตร...");
+      setStatus("Reading card...");
       setIsProcessing(false);
       setShowManualEntry(false);
       
@@ -48,7 +48,7 @@ const NFCPaymentModal = ({
             
             // When progress is at 75%, just show waiting for card
             if (prev < 75 && next >= 75) {
-              setStatus("กรุณาป้อนหมายเลขบัตรด้วยตนเอง");
+              setStatus("Please enter your card number");
               setShowManualEntry(true); // Auto-switch to manual mode instead
               clearInterval(interval);
             }
@@ -73,7 +73,7 @@ const NFCPaymentModal = ({
       
       // Validate that we have a valid shop ID before proceeding
       if (!shopId) {
-        throw new Error("ไม่พบข้อมูลร้านค้า กรุณาเลือกร้านค้าก่อนทำรายการ");
+        throw new Error("Store information not found. Please select a store before making a purchase.");
       }
       
       console.log("Processing payment with:", {
@@ -93,7 +93,7 @@ const NFCPaymentModal = ({
         
         // Check for specific error type for card not found
         if (errorData.error === "card_not_found") {
-          setStatus("ไม่พบบัตร NFC");
+          setStatus("NFC card not found");
           
           // ปรับข้อความแสดงความผิดพลาดให้สวยงามขึ้น
           const errorMessage = `${errorData.message}\n${errorData.details || ""}`;
@@ -105,7 +105,7 @@ const NFCPaymentModal = ({
           
           throw enhancedError;
         } else {
-          throw new Error(errorData.message || "การชำระเงินล้มเหลว");
+          throw new Error(errorData.message || "Payment failed");
         }
       }
       
@@ -113,7 +113,7 @@ const NFCPaymentModal = ({
       
       // Wait a bit to show the processing state
       setTimeout(() => {
-        setStatus("ชำระเงินสำเร็จ!");
+        setStatus("Payment Success!");
         setProgress(100);
         
         // Wait another moment before closing
@@ -125,7 +125,7 @@ const NFCPaymentModal = ({
     } catch (error) {
       console.error("Payment error:", error);
       // ปรับปรุงการแสดงข้อความผิดพลาด
-      const errorMessage = error instanceof Error ? error.message : "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
       
       // แบ่งข้อความตามบรรทัดใหม่ถ้ามี
       const errorLines = errorMessage.split('\n');
@@ -134,7 +134,7 @@ const NFCPaymentModal = ({
       const isCardError = (error as any)?.isCardError;
       
       toast({
-        title: "การชำระเงินล้มเหลว",
+        title: "Payment failed",
         description: (
           <div className="space-y-2">
             {isCardError && (
@@ -158,7 +158,7 @@ const NFCPaymentModal = ({
         ),
         variant: "destructive"
       });
-      setStatus("การชำระเงินล้มเหลว กรุณาลองอีกครั้ง");
+      setStatus("Payment failed. Please try again.");
       setIsProcessing(false);
       // Not closing automatically so the user can try again
     }
@@ -167,7 +167,7 @@ const NFCPaymentModal = ({
   // For demo purposes, allow manual entry to trigger payment
   const handleManualEntry = () => {
     setShowManualEntry(true);
-    setStatus("กรุณาป้อนหมายเลขบัตร NFC");
+    setStatus("Please enter your NFC card number");
     setProgress(0);
     
     // Focus on the input after showing it
@@ -181,13 +181,13 @@ const NFCPaymentModal = ({
   const handleProcessManualEntry = () => {
     if (!cardId.trim()) {
       toast({
-        title: "กรุณาป้อนหมายเลขบัตร",
+        title: "Please enter your card number",
         variant: "destructive"
       });
       return;
     }
     
-    setStatus("กำลังทำรายการ...");
+    setStatus("Processing transaction...");
     setProgress(75);
     processPayment(cardId);
   };
@@ -198,28 +198,28 @@ const NFCPaymentModal = ({
     }}>
       <DialogContent className="max-w-md p-4 md:p-6">
         <DialogHeader>
-          <DialogTitle className="sr-only">การชำระเงินด้วยบัตร NFC</DialogTitle>
+          <DialogTitle className="sr-only">Pay with NFC Card</DialogTitle>
         </DialogHeader>
         <div className="text-center">
           <div className="mb-4 md:mb-6">
             <div className="mx-auto w-12 h-12 md:w-16 md:h-16 bg-blue-100 rounded-full flex items-center justify-center mb-3 md:mb-4">
               <Wifi className="text-primary text-xl md:text-2xl" />
             </div>
-            <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2">ชำระเงินด้วยบัตร NFC</h3>
+            <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2">Pay with NFC Card</h3>
             {!showManualEntry ? (
-              <p className="text-sm md:text-base text-gray-600">กรุณาแตะบัตร NFC ที่เครื่องอ่านบัตรเพื่อชำระเงิน</p>
+              <p className="text-sm md:text-base text-gray-600">กPlease place your NFC card to the reader</p>
             ) : (
-              <p className="text-sm md:text-base text-gray-600">กรุณาป้อนหมายเลขบัตร NFC ของคุณ</p>
+              <p className="text-sm md:text-base text-gray-600">Please enter your NFC card number</p>
             )}
           </div>
           
           <div className="border border-gray-200 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
             <div className="flex justify-between mb-2">
-              <span className="text-sm md:text-base text-gray-600">ยอดรวม:</span>
-              <span className="text-sm md:text-base font-bold text-gray-800">{amount} เหรียญ</span>
+              <span className="text-sm md:text-base text-gray-600">Total:</span>
+              <span className="text-sm md:text-base font-bold text-gray-800">{amount} Coins</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm md:text-base text-gray-600">ร้านค้า:</span>
+              <span className="text-sm md:text-base text-gray-600">Store:</span>
               <span className="text-sm md:text-base text-gray-800">{shopName}</span>
             </div>
           </div>
@@ -227,14 +227,14 @@ const NFCPaymentModal = ({
           {showManualEntry ? (
             <div className="mb-4 md:mb-6">
               <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2 text-left">
-                หมายเลขบัตร NFC
+                NFC Card Number
               </label>
               <Input
                 ref={cardInputRef}
                 type="text"
                 value={cardId}
                 onChange={(e) => setCardId(e.target.value)}
-                placeholder="กรอกหมายเลขบัตร"
+                placeholder="Enter card number"
                 className="mb-4 text-sm"
               />
             </div>
@@ -252,7 +252,7 @@ const NFCPaymentModal = ({
               onClick={onClose}
               disabled={isProcessing}
             >
-              ยกเลิก
+              Cancel
             </Button>
             {!showManualEntry ? (
               <Button 
@@ -260,7 +260,7 @@ const NFCPaymentModal = ({
                 onClick={handleManualEntry}
                 disabled={isProcessing}
               >
-                ป้อนด้วยตนเอง
+                Manual Input
               </Button>
             ) : (
               <Button 
@@ -268,7 +268,7 @@ const NFCPaymentModal = ({
                 onClick={handleProcessManualEntry}
                 disabled={isProcessing}
               >
-                ชำระเงิน
+                Pay Now
               </Button>
             )}
           </div>

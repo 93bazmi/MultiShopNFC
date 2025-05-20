@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
+import TopUpCardModal from "@/components/nfc/TopUpCardModal";
 import { Coins, CreditCard, Plus, Wallet, ArrowUpRight, ArrowDownRight, Pencil, RefreshCcw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
@@ -35,7 +36,7 @@ const topupCardSchema = z.object({
 const CoinsPage = () => {
   const [openNewCard, setOpenNewCard] = useState(false);
   const [openTopup, setOpenTopup] = useState(false);
-  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+  const [selectedCard, setSelectedCard] = useState<NfcCard | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -159,7 +160,7 @@ const CoinsPage = () => {
 
   // Handle card select for top-up
   const handleSelectCardForTopup = (card: NfcCard) => {
-    setSelectedCardId(card.id);
+    setSelectedCard(card);
     topupForm.setValue("cardId", card.id);
     setOpenTopup(true);
   };
@@ -333,10 +334,11 @@ const CoinsPage = () => {
                                 variant="ghost" 
                                 size="icon"
                                 onClick={() => handleSelectCardForTopup(card)}
+                                title="เติมเหรียญ"
                               >
                                 <Wallet className="h-4 w-4 text-primary" />
                               </Button>
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" title="แก้ไข">
                                 <Pencil className="h-4 w-4" />
                               </Button>
                             </div>

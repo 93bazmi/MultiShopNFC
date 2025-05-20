@@ -188,7 +188,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
         <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
-              <span>ระบบขายสินค้า - {activeShop?.name || "ร้านค้า"}</span>
+              <span> {activeShop?.name || "ร้านค้า"}</span>
 
             </DialogTitle>
           </DialogHeader>
@@ -200,7 +200,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
                 <div className="relative">
                   <Input 
                     type="text" 
-                    placeholder="ค้นหาสินค้า..." 
+                    placeholder="Search for products..." 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pr-8"
@@ -249,12 +249,12 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
             <div>
               {/* Cart */}
               <div className="border border-gray-200 rounded-lg p-4 mb-4">
-                <h4 className="text-md font-medium text-gray-800 mb-3">รายการสั่งซื้อ</h4>
+                <h4 className="text-md font-medium text-gray-800 mb-3">Order</h4>
                 <div className="max-h-[25vh] md:max-h-[30vh] overflow-y-auto mb-3">
                   {cart.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-[15vh] md:h-[20vh] text-gray-500">
-                      <p>ตะกร้าว่างเปล่า</p>
-                      <p className="text-xs mt-1">เลือกสินค้าจากรายการด้านซ้าย</p>
+                      <p>Order is empty</p>
+                      <p className="text-xs mt-1">Select products to continue ordering</p>
                     </div>
                   ) : (
                     cart.map((item) => (
@@ -291,23 +291,23 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
                 </div>
                 <div className="border-t border-gray-200 pt-3">
                   <div className="flex justify-between mb-1">
-                    <span className="text-sm text-gray-600">ราคาสินค้า:</span>
-                    <span className="text-sm font-medium text-gray-800">{calculateTotal()} เหรียญ</span>
+                    <span className="text-sm text-gray-600">Product price:</span>
+                    <span className="text-sm font-medium text-gray-800">{calculateTotal()} Coins</span>
                   </div>
                   <div className="flex justify-between mb-1">
-                    <span className="text-sm text-gray-600">ภาษี:</span>
-                    <span className="text-sm font-medium text-gray-800">0 เหรียญ</span>
+                    <span className="text-sm text-gray-600">Tax:</span>
+                    <span className="text-sm font-medium text-gray-800">0 Coins</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-md font-medium text-gray-800">ยอดรวม:</span>
-                    <span className="text-md font-bold text-primary">{calculateTotal()} เหรียญ</span>
+                    <span className="text-md font-medium text-gray-800">Total:</span>
+                    <span className="text-md font-bold text-primary">{calculateTotal()} Coins</span>
                   </div>
                 </div>
               </div>
 
               {/* Payment */}
               <div className="border border-gray-200 rounded-lg p-4">
-                <h4 className="text-md font-medium text-gray-800 mb-3">วิธีการชำระเงิน</h4>
+                <h4 className="text-md font-medium text-gray-800 mb-3">Payment method</h4>
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <Button
                     variant={paymentMethod === "nfc" ? "default" : "outline"}
@@ -317,7 +317,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
                     onClick={() => setPaymentMethod("nfc")}
                   >
                     <Coffee className="mr-2 h-4 w-4" />
-                    <span>บัตร NFC</span>
+                    <span>NFC Card</span>
                   </Button>
                 </div>
                 <div className="text-center">
@@ -326,7 +326,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
                     onClick={processPayment}
                     disabled={cart.length === 0}
                   >
-                    ชำระเงิน
+                   Pay Now
                   </Button>
                 </div>
               </div>

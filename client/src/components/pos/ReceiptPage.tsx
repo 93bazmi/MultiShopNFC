@@ -18,8 +18,8 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
     return (
       <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
         <div className="w-full max-w-xs mx-auto bg-white p-1 rounded-lg shadow-lg">
-          <p className="text-red-500 text-center text-sm">ไม่พบข้อมูลการชำระเงิน</p>
-          <Button onClick={onCompleteClose} className="mt-1 w-full text-xs">กลับ</Button>
+          <p className="text-red-500 text-center text-sm">No payment information found</p>
+          <Button onClick={onCompleteClose} className="mt-1 w-full text-xs">Back</Button>
         </div>
       </div>
     );
@@ -31,12 +31,12 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
 
   const downloadReceipt = () => {
     // Implementation would depend on your needs
-    alert("ดาวน์โหลดใบเสร็จ");
+    alert("Download Receipt");
   };
 
   const shareReceipt = () => {
     // Implementation would depend on your needs
-    alert("แชร์ใบเสร็จ");
+    alert("Share Receipt");
   };
 
   // Format date and time in Thai locale
@@ -109,7 +109,7 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
           <div className="max-w-xs mx-auto flex justify-between items-center">
             <Button variant="ghost" onClick={onClose} size="sm" className="flex items-center text-xs">
               <ArrowLeft className="mr-1 h-3 w-3" />
-              กลับ
+              Back
             </Button>
             <div className="flex space-x-1">
               <Button 
@@ -145,7 +145,7 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
           <div className="w-full max-w-xxs mx-auto bg-white p-1 rounded-lg border border-gray-200 print:border-0 print:shadow-none receipt-content">
             {/* Receipt Header */}
             <div className="text-center mb-1">
-              <h1 className="text-base font-bold text-gray-800 store-name">ร้านค้า</h1>
+              <h1 className="text-base font-bold text-gray-800 store-name">Store</h1>
             </div>
 
             {/* Divider - Solid */}
@@ -153,7 +153,7 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
 
             {/* Receipt Title */}
             <div className="text-center mb-1">
-              <h2 className="text-sm font-semibold receipt-title">ใบเสร็จรับเงิน</h2>
+              <h2 className="text-sm font-semibold receipt-title">Receip</h2>
               <p className="text-gray-500 text-xs text-small">
                 {formatDate(paymentResult.transaction?.timestamp)}
               </p>
@@ -168,11 +168,11 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
             {/* Card Info */}
             <div className="bg-gray-50 p-0.5 rounded-md mb-1 text-xs">
               <div className="flex justify-between">
-                <span className="text-gray-600">บัตร:</span>
+                <span className="text-gray-600">Card:</span>
                 <span className="font-medium">#{paymentResult.card?.cardId || "ไม่ทราบ"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">ประเภท:</span>
+                <span className="text-gray-600">Category:</span>
                 <span className="font-medium">{paymentResult.card?.type || "บัตรเติมเงิน"}</span>
               </div>
             </div>
@@ -182,7 +182,7 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
 
             {/* Items Purchased */}
             <div className="mb-1">
-              <h3 className="text-xs font-semibold mb-1">รายการสินค้า</h3>
+              <h3 className="text-xs font-semibold mb-1">Product List</h3>
               {paymentResult.cart && paymentResult.cart.length > 0 ? (
                 <div className="space-y-0.5">
                   {paymentResult.cart.map((item, index) => (
@@ -205,24 +205,24 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
 
             {/* Transaction Details */}
             <div className="mb-1">
-              <h3 className="text-xs font-semibold mb-0.5">รายละเอียดการชำระเงิน</h3>
+              <h3 className="text-xs font-semibold mb-0.5">Payment Details</h3>
               <div className="flex justify-between py-0.5 border-b border-gray-100 text-xs">
-                <span className="text-gray-600">ยอดเดิม:</span>
+                <span className="text-gray-600">Original balance:</span>
                 <span className="text-gray-800">
                   {paymentResult.transaction?.previousBalance !== undefined ? 
-                  `${paymentResult.transaction.previousBalance} coins` : "ไม่มีข้อมูล"}
+                  `${paymentResult.transaction.previousBalance} Coins` : "ไม่มีข้อมูล"}
                 </span>
               </div>
               <div className="flex justify-between py-0.5 border-b border-gray-100 text-xs">
-                <span className="text-gray-600">ยอดเงินที่ชำระ:</span>
+                <span className="text-gray-600">Amount paid:</span>
                 <span className="font-bold text-gray-800">
-                  {paymentResult.transaction?.amount || 0} coins
+                  {paymentResult.transaction?.amount || 0} Coins
                 </span>
               </div>
               <div className="flex justify-between py-0.5 text-xs">
-                <span className="text-gray-600">ยอดคงเหลือ:</span>
+                <span className="text-gray-600">Remaining balance:</span>
                 <span className="font-bold text-emerald-600">
-                  {paymentResult.remainingBalance || 0} coins
+                  {paymentResult.remainingBalance || 0} Coins
                 </span>
               </div>
             </div>
@@ -232,8 +232,8 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
 
             {/* Thank You Message */}
             <div className="text-center mb-1">
-              <p className="text-gray-700 text-xs">ขอบคุณที่ใช้บริการ</p>
-              <p className="text-xs text-gray-500 mt-0.5 text-xs">เอกสารนี้เป็นหลักฐานการชำระเงิน</p>
+              <p className="text-gray-700 text-xs">Thank you for your purchase</p>
+              <p className="text-xs text-gray-500 mt-0.5 text-xs">This document serves as a payment receipt</p>
             </div>
 
             {/* Close button (only visible when not printing) */}
@@ -243,7 +243,7 @@ const ReceiptPage: React.FC<ReceiptPageProps> = ({
                 className="w-full text-xs h-6"
                 onClick={onCompleteClose}
               >
-                ปิด
+                Close
               </Button>
             </div>
           </div>

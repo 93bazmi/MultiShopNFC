@@ -125,10 +125,10 @@ const ShopDetailPage = () => {
     <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <Button variant="outline" onClick={() => window.location.href = "/shops"}>
+          {/* <Button variant="outline" onClick={() => window.location.href = "/shops"}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             กลับไปยังรายการร้านค้า
-          </Button>
+          </Button> */}
         </div>
         
         <Card className="overflow-hidden border-none shadow-md">
@@ -149,14 +149,14 @@ const ShopDetailPage = () => {
                   "inline-block px-3 py-1 rounded-full text-xs font-semibold mt-2",
                   shopData.status === "active" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
                 )}>
-                  {shopData.status === "active" ? "เปิดให้บริการ" : "ปิดให้บริการ"}
+                  {shopData.status === "active" ? "Open" : "Closed"}
                 </div>
               </div>
             </div>
           </div>
           
           <CardContent className="p-6">
-            <h2 className="text-lg md:text-xl font-semibold mb-4 text-gray-800">สินค้าของร้าน</h2>
+            {/* <h2 className="text-lg md:text-xl font-semibold mb-4 text-gray-800">สินค้าของร้าน</h2>
             
             {productsLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -192,7 +192,7 @@ const ShopDetailPage = () => {
                   </div>
                 ))}
               </div>
-            )}
+            )} */}
             
             <div className="mt-6 flex justify-center">
               <Button 
@@ -200,7 +200,7 @@ const ShopDetailPage = () => {
                 onClick={() => setShowPOS(true)}
               >
                 <CreditCard className="mr-2 h-5 w-5" />
-                ชำระเงินและเลือกสินค้า
+                เลือกสินค้าและชำระเงิน
               </Button>
             </div>
           </CardContent>
