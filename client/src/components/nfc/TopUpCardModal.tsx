@@ -122,7 +122,15 @@ const TopupCardModal = ({
   // Process Topup transaction
   const processTopup = async (manualCardId?: string) => {
     // ตรวจสอบว่ากำลังประมวลผลอยู่หรือไม่
-    if (isProcessing || processingTransaction) return;
+    if (isProcessing || processingTransaction) {
+      console.log("Transaction already in progress, ignoring request");
+      toast({
+        title: "กำลังดำเนินการ",
+        description: "กรุณารอสักครู่ ระบบกำลังประมวลผลการเติมเงิน",
+        variant: "default"
+      });
+      return;
+    }
     
     // ใช้ cardId ที่ส่งมาหรือที่อ่านได้จาก NFC
     const cardIdToUse = manualCardId || cardId;
