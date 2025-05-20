@@ -35,6 +35,11 @@ const TopupCardModal = ({
   const [processingTransaction, setProcessingTransaction] = useState(false);
 
   // ใช้ hook useNFC สำหรับการอ่านบัตร NFC จริง
+  // ใช้ ref เพื่อเก็บสถานะการทำงานล่าสุด แทนการใช้ state ที่อาจจะไม่ได้รับการอัพเดททันที
+  const isProcessingRef = useRef(false);
+  const processedTagsRef = useRef<Set<string>>(new Set());
+  const lastScanTimeRef = useRef<Record<string, number>>({});
+  
   const { 
     isReading, 
     supportedNFC, 
@@ -47,22 +52,51 @@ const TopupCardModal = ({
       // เมื่ออ่านบัตรได้แล้ว ส่งไปประมวลผลการเติมเงิน
       console.log("NFC card read for topup:", serialNumber);
       
-      // ตรวจสอบว่ากำลังประมวลผลอยู่หรือไม่
-      if (isProcessing || processingTransaction) {
+      // ตรวจสอบว่ากำลังประมวลผลอยู่หรือไม่โดยใช้ Ref แทน state
+      if (isProcessingRef.current) {
         console.log("Already processing a transaction, ignoring new card scan");
-        return;
-      }
-      
-      // ตรวจสอบว่าเคยประมวลผลบัตรใบนี้ไปแล้วหรือไม่
-      if (processedCardIds.has(serialNumber)) {
-        console.log("Card already processed, preventing duplicate topup", serialNumber);
         toast({
-          title: "การประมวลผลถูกป้องกัน",
-          description: "บัตรนี้กำลังถูกประมวลผล โปรดรอสักครู่",
+          title: "กำลังดำเนินการ",
+          description: "กรุณารอสักครู่ ระบบกำลังประมวลผลการเติมเงิน",
           variant: "default"
         });
         return;
       }
+      
+      // ตรวจสอบว่าเคยประมวลผลบัตรใบนี้ไปแล้วหรือไม่
+      if (processedTagsRef.current.has(serialNumber)) {
+        console.log("Card already processed, preventing duplicate topup", serialNumber);
+        toast({
+          title: "การเติมเงินสำเร็จแล้ว",
+          description: "บัตรนี้ได้รับการเติมเงินเรียบร้อยแล้ว",
+          variant: "default"
+        });
+        return;
+      }
+      
+      // ตรวจสอบเวลาที่ผ่านมา
+      const now = Date.now();
+      const lastScanTime = lastScanTimeRef.current[serialNumber] || 0;
+      const timeDiff = now - lastScanTime;
+      
+      // ถ้าเพิ่งแสกนไปไม่นาน (5 วินาที) ให้ข้ามไป
+      if (lastScanTime > 0 && timeDiff < 5000) {
+        console.log(`ป้องกันการแสกนซ้ำ: ${serialNumber} (เวลาผ่านไป ${timeDiff}ms)`);
+        toast({
+          title: "กรุณารอสักครู่",
+          description: "บัตรนี้เพิ่งถูกอ่านไปเมื่อสักครู่ กรุณารอ 5 วินาที",
+          variant: "default"
+        });
+        return;
+      }
+      
+      // บันทึกเวลาล่าสุดที่แสกน
+      lastScanTimeRef.current[serialNumber] = now;
+      
+      // ตั้งค่าสถานะกำลังประมวลผล
+      isProcessingRef.current = true;
+      setIsProcessing(true);
+      setProcessingTransaction(true);
       
       setCardId(serialNumber);
       processTopup(serialNumber);
@@ -121,8 +155,8 @@ const TopupCardModal = ({
 
   // Process Topup transaction
   const processTopup = async (manualCardId?: string) => {
-    // ตรวจสอบว่ากำลังประมวลผลอยู่หรือไม่
-    if (isProcessing || processingTransaction) {
+    // ตรวจสอบว่ากำลังประมวลผลอยู่หรือไม่ (ใช้ ref เพื่อความแม่นยำในสภาพแวดล้อมแบบ async)
+    if (isProcessingRef.current) {
       console.log("Transaction already in progress, ignoring request");
       toast({
         title: "กำลังดำเนินการ",
@@ -136,20 +170,23 @@ const TopupCardModal = ({
     const cardIdToUse = manualCardId || cardId;
     
     // ตรวจสอบว่าเคยประมวลผลบัตรใบนี้ไปแล้วหรือไม่
-    if (processedCardIds.has(cardIdToUse)) {
+    if (processedTagsRef.current.has(cardIdToUse)) {
       console.log("Card already processed, preventing duplicate topup", cardIdToUse);
       toast({
-        title: "การประมวลผลถูกป้องกัน",
-        description: "บัตรนี้กำลังถูกประมวลผล โปรดรอสักครู่",
+        title: "การเติมเงินสำเร็จแล้ว",
+        description: "บัตรนี้ได้รับการเติมเงินเรียบร้อยแล้ว",
         variant: "default"
       });
       return;
     }
     
+    // ตั้งค่าสถานะการประมวลผลเป็น true ทั้งใน ref และ state
+    isProcessingRef.current = true;
     setProcessingTransaction(true);
     setIsProcessing(true);
     
-    // เพิ่มบัตรเข้าไปในรายการที่กำลังประมวลผล
+    // เพิ่มบัตรเข้าไปในรายการที่กำลังประมวลผล (ทั้งใน ref และ state)
+    processedTagsRef.current.add(cardIdToUse);
     setProcessedCardIds(prev => {
       const newSet = new Set(prev);
       newSet.add(cardIdToUse);
@@ -196,13 +233,14 @@ const TopupCardModal = ({
 
       // Wait a bit to show the processing state
       setTimeout(() => {
-        setStatus("Topup Success!");
+        setStatus("เติมเงินสำเร็จ!");
         setProgress(100);
 
         // Wait another moment before closing
         setTimeout(() => {
-          // รีเซ็ตสถานะในการประมวลผลบัตร
+          // รีเซ็ตสถานะการประมวลผลใน state แต่ยังคง ref ไว้เพื่อป้องกันการซ้ำ
           setProcessingTransaction(false);
+          setIsProcessing(false);
           
           // ส่งผลลัพธ์กลับไป
           onSuccess(result);
@@ -238,8 +276,10 @@ const TopupCardModal = ({
       setStatus("การเติมเงินล้มเหลว กรุณาลองอีกครั้ง");
       setIsProcessing(false);
       setProcessingTransaction(false);
+      isProcessingRef.current = false;
       
       // นำบัตรออกจากรายการประมวลผล เพื่อให้สามารถทำรายการใหม่ได้
+      processedTagsRef.current.delete(cardIdToUse);
       setProcessedCardIds(prev => {
         const newSet = new Set(prev);
         newSet.delete(cardIdToUse);
