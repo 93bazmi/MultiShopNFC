@@ -40,25 +40,25 @@ const NFCPaymentModal = ({
       setIsProcessing(false);
       setShowManualEntry(false);
       
-      if (!showManualEntry) {
-        // Simulate NFC card detection progress but don't auto-process
-        const interval = setInterval(() => {
-          setProgress(prev => {
-            const next = Math.min(prev + 5, 75); // Only up to 75%
-            
-            // When progress is at 75%, just show waiting for card
-            if (prev < 75 && next >= 75) {
-              setStatus("Please enter your card number");
-              setShowManualEntry(true); // Auto-switch to manual mode instead
-              clearInterval(interval);
-            }
-            
-            return next;
-          });
-        }, 200);
-        
-        return () => clearInterval(interval);
-      }
+      // เริ่มเปลี่ยนแปลงตรงนี้: จะทำธุรกรรมทันทีแทนที่จะรอให้ผู้ใช้ป้อนหมายเลขบัตร
+      const interval = setInterval(() => {
+        setProgress(prev => {
+          const next = Math.min(prev + 5, 100);
+          
+          // เมื่อถึง 100% ให้ทำการชำระเงินเลย
+          if (prev < 100 && next >= 100) {
+            clearInterval(interval);
+            // ในกรณีนี้จะใช้บัตรทดสอบ "SWT-1" เนื่องจากมีอยู่ในระบบแล้ว
+            const defaultCardId = "SWT-1"; // ใช้บัตรทดสอบที่มีในระบบ
+            setStatus("Processing payment...");
+            processPayment(defaultCardId);
+          }
+          
+          return next;
+        });
+      }, 200);
+      
+      return () => clearInterval(interval);
     }
   }, [open]);
 
