@@ -135,9 +135,19 @@ export function useNFC({ onRead, autoStart = false }: UseNFCOptions = {}) {
       };
 
       ndef.onreadingerror = (error: any) => {
+        // ตรวจสอบประเภทข้อผิดพลาด - บางครั้งอาจเป็นแค่การที่ไม่มีบัตร NFC อยู่ใกล้
         console.error('Error reading NFC tag:', error);
-        setError(new Error('Error reading NFC tag'));
-        setStatus('error');
+        
+        // ตรวจสอบว่าเป็นข้อผิดพลาดที่ต้องแจ้งผู้ใช้หรือไม่
+        // หากเป็นข้อผิดพลาดชั่วคราวจากการไม่มีบัตร (NotReadableError) ไม่ต้องแจ้งผู้ใช้
+        if (error.name !== 'NotReadableError') {
+          setError(new Error('เกิดข้อผิดพลาดในการอ่านบัตร NFC'));
+          setStatus('error');
+        } else {
+          // กรณีเป็นข้อผิดพลาดชั่วคราว ให้กลับไปสถานะรอการอ่าน
+          console.log('Temporary NFC reading error, continuing to scan');
+          setStatus('reading');
+        }
       };
 
       console.log('Starting NFC scan...');
