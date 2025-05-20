@@ -29,6 +29,10 @@ const TopupCardModal = ({
   const [cardId, setCardId] = useState(""); 
   const { toast } = useToast();
   const cardInputRef = useRef<HTMLInputElement>(null);
+  
+  // เพิ่มสถานะเพื่อป้องกันการแสกนซ้ำ
+  const [processedCardIds, setProcessedCardIds] = useState<Set<string>>(new Set());
+  const [processingTransaction, setProcessingTransaction] = useState(false);
 
   // ใช้ hook useNFC สำหรับการอ่านบัตร NFC จริง
   const { 
@@ -42,6 +46,24 @@ const TopupCardModal = ({
     onRead: (serialNumber) => {
       // เมื่ออ่านบัตรได้แล้ว ส่งไปประมวลผลการเติมเงิน
       console.log("NFC card read for topup:", serialNumber);
+      
+      // ตรวจสอบว่ากำลังประมวลผลอยู่หรือไม่
+      if (isProcessing || processingTransaction) {
+        console.log("Already processing a transaction, ignoring new card scan");
+        return;
+      }
+      
+      // ตรวจสอบว่าเคยประมวลผลบัตรใบนี้ไปแล้วหรือไม่
+      if (processedCardIds.has(serialNumber)) {
+        console.log("Card already processed, preventing duplicate topup", serialNumber);
+        toast({
+          title: "การประมวลผลถูกป้องกัน",
+          description: "บัตรนี้กำลังถูกประมวลผล โปรดรอสักครู่",
+          variant: "default"
+        });
+        return;
+      }
+      
       setCardId(serialNumber);
       processTopup(serialNumber);
     }
@@ -99,12 +121,35 @@ const TopupCardModal = ({
 
   // Process Topup transaction
   const processTopup = async (manualCardId?: string) => {
-    if (isProcessing) return;
+    // ตรวจสอบว่ากำลังประมวลผลอยู่หรือไม่
+    if (isProcessing || processingTransaction) return;
+    
+    // ใช้ cardId ที่ส่งมาหรือที่อ่านได้จาก NFC
+    const cardIdToUse = manualCardId || cardId;
+    
+    // ตรวจสอบว่าเคยประมวลผลบัตรใบนี้ไปแล้วหรือไม่
+    if (processedCardIds.has(cardIdToUse)) {
+      console.log("Card already processed, preventing duplicate topup", cardIdToUse);
+      toast({
+        title: "การประมวลผลถูกป้องกัน",
+        description: "บัตรนี้กำลังถูกประมวลผล โปรดรอสักครู่",
+        variant: "default"
+      });
+      return;
+    }
+    
+    setProcessingTransaction(true);
     setIsProcessing(true);
+    
+    // เพิ่มบัตรเข้าไปในรายการที่กำลังประมวลผล
+    setProcessedCardIds(prev => {
+      const newSet = new Set(prev);
+      newSet.add(cardIdToUse);
+      return newSet;
+    });
 
     try {
-      // Use manual card ID if provided, otherwise use the default one
-      const cardIdToUse = manualCardId || cardId;
+      // ใช้ cardId ที่ส่งมาหรือที่อ่านได้จาก NFC - ประกาศไว้ด้านบนแล้ว
 
       console.log("Processing topup with:", {
         cardId: cardIdToUse,
@@ -148,17 +193,21 @@ const TopupCardModal = ({
 
         // Wait another moment before closing
         setTimeout(() => {
+          // รีเซ็ตสถานะในการประมวลผลบัตร
+          setProcessingTransaction(false);
+          
+          // ส่งผลลัพธ์กลับไป
           onSuccess(result);
         }, 1000);
       }, 1000);
 
     } catch (error) {
       console.error("Topup error:", error);
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+      const errorMessage = error instanceof Error ? error.message : "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
       const errorLines = errorMessage.split('\n');
 
       toast({
-        title: "Topup failed",
+        title: "การเติมเงินล้มเหลว",
         description: (
           <div className="space-y-2">
             <div className="space-y-1">
@@ -177,8 +226,17 @@ const TopupCardModal = ({
         ),
         variant: "destructive"
       });
-      setStatus("Topup failed. Please try again.");
+      
+      setStatus("การเติมเงินล้มเหลว กรุณาลองอีกครั้ง");
       setIsProcessing(false);
+      setProcessingTransaction(false);
+      
+      // นำบัตรออกจากรายการประมวลผล เพื่อให้สามารถทำรายการใหม่ได้
+      setProcessedCardIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(cardIdToUse);
+        return newSet;
+      });
     }
   };
 
