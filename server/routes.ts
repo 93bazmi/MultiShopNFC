@@ -131,7 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // ส่งข้อมูลสำเร็จเทียมเพื่อไม่ให้ UI พยายามส่งคำขอซ้ำ
         return res.status(200).json({
           success: true,
-          message: "Transaction already processed",
+          message: "การเติมเงินสำเร็จแล้ว",
           isDuplicate: true
         });
       }
@@ -657,8 +657,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (checkDuplicateTransaction(cardId, shopId, amount)) {
         console.log(`ป้องกันการประมวลผลธุรกรรมซ้ำ: ${cardId} - ${shopId} - ${amount}`);
         // ส่งข้อมูลธุรกรรมสำเร็จกลับไป เพื่อไม่ให้ UI พยายามส่งคำขอซ้ำ
-        return res.status(409).json({
-          message: "Duplicate transaction prevented",
+        return res.status(200).json({
+          success: true,
+          message: "การชำระเงินสำเร็จแล้ว",
           isDuplicate: true
         });
       }
