@@ -4,6 +4,7 @@ import ShopDetailPage from "@/pages/ShopDetailPage";
 import ProductsPage from "@/pages/ProductsPage";
 import POSPage from "@/pages/POSPage";
 import NFCTestPage from "@/pages/NFCTestPage";
+import NFCRegisterPage from "@/pages/NFCRegisterPage";
 import NotFound from "@/pages/not-found";
 import MainLayout from "@/components/layouts/MainLayout";
 import TopupPage from "@/pages/TopupPage";
@@ -16,8 +17,9 @@ function App() {
         <Route path="/shop/:id" component={ShopDetailPage} />
         <Route path="/products" component={ProductsPage} />
         <Route path="/pos" component={POSPage} />
-        <Route path="/topup" component={TopupPage} /> {/* เพิ่มเส้นทางสำหรับหน้าเติมเงิน */}
-        <Route path="/nfc-test" component={NFCTestPage} /> {/* เพิ่มเส้นทางสำหรับหน้าทดสอบ NFC */}
+        <Route path="/topup" component={TopupPage} />
+        <Route path="/nfc-test" component={NFCTestPage} />
+        <Route path="/nfc-register" component={NFCRegisterPage} />
         <Route component={NotFound} />
       </Switch>
     </MainLayout>
