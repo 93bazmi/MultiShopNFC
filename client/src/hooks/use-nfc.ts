@@ -135,43 +135,18 @@ export function useNFC({ onRead, autoStart = false }: UseNFCOptions = {}) {
       };
 
       ndef.onreadingerror = (error: any) => {
-        // ตรวจสอบประเภทข้อผิดพลาด - บางครั้งอาจเป็นแค่การที่ไม่มีบัตร NFC อยู่ใกล้
         console.error('Error reading NFC tag:', error);
-        
-        // ตรวจสอบว่าเป็นข้อผิดพลาดที่ต้องแจ้งผู้ใช้หรือไม่
-        // หากเป็นข้อผิดพลาดชั่วคราวจากการไม่มีบัตร (NotReadableError) ไม่ต้องแจ้งผู้ใช้
-        if (error.name !== 'NotReadableError') {
-          setError(new Error('เกิดข้อผิดพลาดในการอ่านบัตร NFC'));
-          setStatus('error');
-        } else {
-          // กรณีเป็นข้อผิดพลาดชั่วคราว ให้กลับไปสถานะรอการอ่าน
-          console.log('Temporary NFC reading error, continuing to scan');
-          setStatus('reading');
-        }
+        setError(new Error('Error reading NFC tag'));
+        setStatus('error');
       };
 
       console.log('Starting NFC scan...');
       await ndef.scan({ signal: controller.signal });
     } catch (error: any) {
       console.error('Error starting NFC scan:', error);
-      
-      // จัดการกับข้อผิดพลาด "signal is aborted" ซึ่งเกิดขึ้นบ่อยและมักเป็นเพียงการยกเลิกการอ่าน
-      if (error.name === 'AbortError' || (error.message && error.message.includes('aborted'))) {
-        console.log('NFC scan was aborted, this is often a normal part of operation');
-        // ไม่แสดงข้อผิดพลาดให้ผู้ใช้เห็น เพราะเป็นเรื่องปกติ
-        setStatus('idle');
-        
-        // ถ้าตั้งค่า autoStart ไว้ ให้ลองสแกนใหม่หลังจากรอสักครู่
-        if (autoStart) {
-          setTimeout(() => {
-            startScan();
-          }, 1000);
-        }
-      } else {
-        setError(error);
-        setStatus('error');
-        setIsReading(false);
-      }
+      setError(error);
+      setStatus('error');
+      setIsReading(false);
     }
   }, [onRead]);
 
