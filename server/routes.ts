@@ -12,6 +12,38 @@ import {
 import { ZodError } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // ระบบป้องกันการทำธุรกรรมซ้ำในช่วงเวลาสั้นๆ
+  // เก็บ map ของ transaction ล่าสุดและเวลาที่เกิดขึ้น
+  const recentTransactions = new Map<string, {timestamp: number, amount: number}>();
+  const DEBOUNCE_TIME = 5000; // 5 วินาที (มิลลิวินาที)
+  
+  // ฟังก์ชันตรวจสอบและบันทึกธุรกรรม
+  const checkDuplicateTransaction = (cardId: string, shopId: number, amount: number): boolean => {
+    const now = Date.now();
+    const transactionKey = `${cardId}-${shopId}-${amount}`;
+    
+    // ตรวจสอบว่ามีธุรกรรมนี้เกิดขึ้นเมื่อเร็วๆ นี้หรือไม่
+    const recentTransaction = recentTransactions.get(transactionKey);
+    
+    if (recentTransaction && (now - recentTransaction.timestamp < DEBOUNCE_TIME)) {
+      console.log(`ป้องกันธุรกรรมซ้ำ: ${transactionKey} (เวลาผ่านไป: ${now - recentTransaction.timestamp}ms)`);
+      return true; // เป็นธุรกรรมซ้ำ
+    }
+    
+    // บันทึกธุรกรรมนี้
+    recentTransactions.set(transactionKey, { timestamp: now, amount });
+    
+    // ลบธุรกรรมเก่าเกิน 10 นาที
+    const TEN_MINUTES = 10 * 60 * 1000;
+    for (const [key, transaction] of recentTransactions.entries()) {
+      if (now - transaction.timestamp > TEN_MINUTES) {
+        recentTransactions.delete(key);
+      }
+    }
+    
+    return false; // ไม่ใช่ธุรกรรมซ้ำ
+  };
+
   // Setup error handling middleware for Zod validation
   const validateBody = (schema: any) => {
     return (req: Request, res: Response, next: Function) => {
@@ -604,6 +636,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .json({
             message: "Missing required fields: cardId, shopId, or amount",
           });
+      }
+      
+      // ป้องกันการประมวลผลธุรกรรมซ้ำ
+      if (checkDuplicateTransaction(cardId, shopId, amount)) {
+        console.log(`ป้องกันการประมวลผลธุรกรรมซ้ำ: ${cardId} - ${shopId} - ${amount}`);
+        // ส่งข้อมูลธุรกรรมสำเร็จกลับไป เพื่อไม่ให้ UI พยายามส่งคำขอซ้ำ
+        return res.status(409).json({
+          message: "Duplicate transaction prevented",
+          isDuplicate: true
+        });
       }
 
       // Convert shopId to number if it's a string
