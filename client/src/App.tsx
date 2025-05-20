@@ -5,7 +5,7 @@ import ProductsPage from "@/pages/ProductsPage";
 import POSPage from "@/pages/POSPage";
 import NotFound from "@/pages/not-found";
 import MainLayout from "@/components/layouts/MainLayout";
-import TopupPage from "@/pages/TopupPage";
+
 function App() {
   return (
     <MainLayout>
@@ -15,7 +15,6 @@ function App() {
         <Route path="/shop/:id" component={ShopDetailPage} />
         <Route path="/products" component={ProductsPage} />
         <Route path="/pos" component={POSPage} />
-        <Route path="/topup" component={TopupPage} /> {/* เพิ่มเส้นทางสำหรับหน้าเติมเงิน */}
         <Route component={NotFound} />
       </Switch>
     </MainLayout>

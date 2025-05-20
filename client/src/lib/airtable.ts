@@ -12,7 +12,6 @@ export const API = {
   NFC_CARDS: '/api/nfc-cards',
   TRANSACTIONS: '/api/transactions',
   NFC_PAYMENT: '/api/nfc-payment',
-  NFC_TOPUP: "/api/nfc-topup" // เพิ่ม endpoint สำหรับเติมเงิน
 };
 
 // Function to format API query parameters
