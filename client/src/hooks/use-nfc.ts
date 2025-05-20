@@ -154,9 +154,24 @@ export function useNFC({ onRead, autoStart = false }: UseNFCOptions = {}) {
       await ndef.scan({ signal: controller.signal });
     } catch (error: any) {
       console.error('Error starting NFC scan:', error);
-      setError(error);
-      setStatus('error');
-      setIsReading(false);
+      
+      // จัดการกับข้อผิดพลาด "signal is aborted" ซึ่งเกิดขึ้นบ่อยและมักเป็นเพียงการยกเลิกการอ่าน
+      if (error.name === 'AbortError' || (error.message && error.message.includes('aborted'))) {
+        console.log('NFC scan was aborted, this is often a normal part of operation');
+        // ไม่แสดงข้อผิดพลาดให้ผู้ใช้เห็น เพราะเป็นเรื่องปกติ
+        setStatus('idle');
+        
+        // ถ้าตั้งค่า autoStart ไว้ ให้ลองสแกนใหม่หลังจากรอสักครู่
+        if (autoStart) {
+          setTimeout(() => {
+            startScan();
+          }, 1000);
+        }
+      } else {
+        setError(error);
+        setStatus('error');
+        setIsReading(false);
+      }
     }
   }, [onRead]);
 
