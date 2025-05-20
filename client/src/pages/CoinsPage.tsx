@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { API } from "@/lib/airtable";
 import { NfcCard, Transaction, insertNfcCardSchema, insertTransactionSchema } from "@shared/schema";
@@ -628,9 +628,12 @@ const CoinsPage = () => {
             
             <TabsContent value="details">
               <div className="mb-4">
-                <Select onValueChange={(value) => setSelectedCardId(parseInt(value))}>
+                <Select onValueChange={(value) => {
+                  const card = nfcCards?.find((c: NfcCard) => c.id === parseInt(value));
+                  setSelectedCard(card || null);
+                }}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a card to view details" />
+                    <SelectValue placeholder="เลือกบัตรเพื่อดูรายละเอียด" />
                   </SelectTrigger>
                   <SelectContent>
                     {nfcCards?.map((card: NfcCard) => (
@@ -642,9 +645,9 @@ const CoinsPage = () => {
                 </Select>
               </div>
 
-              {!selectedCardId ? (
+              {!selectedCard ? (
                 <div className="text-center py-8 text-gray-500">
-                  Select a card to view its details
+                  เลือกบัตรเพื่อดูรายละเอียด
                 </div>
               ) : isLoading ? (
                 <div className="space-y-4">
@@ -654,10 +657,10 @@ const CoinsPage = () => {
                 </div>
               ) : (
                 <>
-                  {nfcCards && (
+                  {nfcCards && selectedCard && (
                     <div className="bg-gray-50 rounded-lg p-6">
                       {(() => {
-                        const card = nfcCards.find((c: NfcCard) => c.id === selectedCardId);
+                        const card = selectedCard;
                         if (!card) return <div>Card not found</div>;
                         
                         return (
