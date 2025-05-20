@@ -26,39 +26,29 @@ const NFCPaymentModal = ({
   onSuccess 
 }: NFCPaymentModalProps) => {
   const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState("Reading card...");
+  const [status, setStatus] = useState("กรุณาแตะบัตร NFC...");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
-  const [cardId, setCardId] = useState(""); // ไม่กำหนดค่าเริ่มต้น ให้ผู้ใช้กรอกเอง
+  const [cardId, setCardId] = useState("");
   const { toast } = useToast();
   const cardInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
       setProgress(0);
-      setStatus("Reading card...");
+      setStatus("กรุณาแตะบัตร NFC...");
       setIsProcessing(false);
       setShowManualEntry(false);
       
-      // เริ่มเปลี่ยนแปลงตรงนี้: จะทำธุรกรรมทันทีแทนที่จะรอให้ผู้ใช้ป้อนหมายเลขบัตร
-      const interval = setInterval(() => {
-        setProgress(prev => {
-          const next = Math.min(prev + 5, 100);
-          
-          // เมื่อถึง 100% ให้ทำการชำระเงินเลย
-          if (prev < 100 && next >= 100) {
-            clearInterval(interval);
-            // ในกรณีนี้จะใช้บัตรทดสอบ "SWT-1" เนื่องจากมีอยู่ในระบบแล้ว
-            const defaultCardId = "SWT-1"; // ใช้บัตรทดสอบที่มีในระบบ
-            setStatus("Processing payment...");
-            processPayment(defaultCardId);
-          }
-          
-          return next;
-        });
-      }, 200);
-      
-      return () => clearInterval(interval);
+      // แสดงหน้าจอให้ผู้ใช้ป้อนข้อมูลบัตรทันที โดยไม่ต้องรอหรือจำลองการอ่านบัตร
+      setTimeout(() => {
+        setShowManualEntry(true);
+        setStatus("กรุณาป้อนรหัสบัตร NFC");
+        // โฟกัสที่ช่องป้อนข้อมูลโดยอัตโนมัติ
+        if (cardInputRef.current) {
+          cardInputRef.current.focus();
+        }
+      }, 500); // รอสักครู่เพื่อให้ UI ได้แสดงผล
     }
   }, [open]);
 
