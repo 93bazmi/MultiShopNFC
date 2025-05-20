@@ -30,8 +30,8 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
   // Get background color class for icon
   const getIconBgColor = (shop: Shop) => {
     switch (shop.iconColor) {
-      case "blue":
-        return "bg-blue-100";
+      case "white":
+        return "bg-white-100";
       case "purple":
         return "bg-purple-100";
       case "green":
@@ -47,7 +47,7 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
     <>
       <div className="bg-white rounded-xl shadow-md p-6">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-semibold text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">ร้านค้าทั้งหมด</h3>
+          <h3 className="text-xl font-semibold text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">All Shop</h3>
         </div>
         
         {isLoading ? (
@@ -73,7 +73,7 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
                 <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                   <ShoppingBag className="h-8 w-8 text-gray-400" />
                 </div>
-                <p className="text-lg">ไม่พบร้านค้า</p>
+                <p className="text-lg">Shop Not Found</p>
                 <p className="text-sm text-gray-400 mt-1">ขออภัย ไม่มีร้านค้าที่พร้อมให้บริการในขณะนี้</p>
               </div>
             ) : (
@@ -103,17 +103,17 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
                   
                   <div className="space-y-2 md:space-y-3 mb-3 md:mb-4">
                     <div className="flex justify-between text-xs md:text-sm">
-                      <span className="text-gray-500">รายละเอียด:</span>
+                      <span className="text-gray-500">Description:</span>
                       <span className="font-medium text-gray-800 text-right max-w-[150px] md:max-w-full truncate">{shop.description || "ไม่มีรายละเอียด"}</span>
                     </div>
                     
                     <div className="flex justify-between text-xs md:text-sm">
-                      <span className="text-gray-500">สถานะ:</span>
+                      <span className="text-gray-500">Status:</span>
                       <div className={cn(
                         "px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs font-semibold",
                         shop.status === "active" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
                       )}>
-                        {shop.status === "active" ? "เปิดให้บริการ" : "ปิดให้บริการ"}
+                        {shop.status === "active" ? "Open" : "Closed"}
                       </div>
                     </div>
                   </div>
@@ -127,10 +127,10 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
                       }}
                     >
                       <ShoppingBag className="h-3 w-3 md:h-4 md:w-4" />
-                      ดูรายละเอียด
+                      Go to shop
                     </Button>
                     
-                    <Button 
+                    {/* <Button 
                       className="w-full mt-2 gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-300 text-xs md:text-sm" 
                       onClick={(e) => {
                         e.stopPropagation();
@@ -140,7 +140,7 @@ const ShopList = ({ shops, isLoading }: ShopListProps) => {
                     >
                       <CreditCard className="h-3 w-3 md:h-4 md:w-4" />
                       ชำระเงิน
-                    </Button>
+                    </Button> */}
                   </div>
                 </div>
               ))

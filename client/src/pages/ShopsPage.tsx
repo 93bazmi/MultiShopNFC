@@ -13,10 +13,8 @@ const ShopsPage = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>ร้านค้า</CardTitle>
-          <CardDescription>
-            เลือกร้านค้าเพื่อทำรายการชำระเงิน
-          </CardDescription>
+          <CardTitle>All Shop</CardTitle>
+
         </CardHeader>
         <CardContent>
           <ShopList shops={shops || []} isLoading={isLoading} />

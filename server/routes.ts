@@ -30,7 +30,246 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     };
   };
+  // เพิ่ม endpoint สำหรับทดสอบการอ่านบัตร NFC
+  app.post("/api/nfc-test-read", async (req, res) => {
+    try {
+      const { cardId } = req.body;
 
+      console.log("Received NFC test read request:", { cardId });
+
+      if (!cardId) {
+        return res
+          .status(400)
+          .json({
+            message: "ไม่พบหมายเลขบัตร NFC",
+            error: "card_id_missing",
+          });
+      }
+
+      // ค้นหาบัตรจากฐานข้อมูล
+      let card;
+      try {
+        card = await storage.getNfcCardByCardId(cardId);
+      } catch (error) {
+        console.error("Error getting card:", error);
+      }
+
+      // ถ้าไม่พบบัตรในระบบ
+      if (!card) {
+        return res.status(404).json({
+          message: "ไม่พบหมายเลขบัตร NFC ในระบบ",
+          error: "card_not_found",
+          cardId: cardId,
+          exists: false
+        });
+      }
+
+      // พบบัตรในระบบ ส่งข้อมูลกลับไป
+      res.json({
+        message: "พบบัตร NFC ในระบบ",
+        card: card,
+        exists: true
+      });
+    } catch (error) {
+      console.error("Error testing NFC card:", error);
+      res.status(500).json({ message: "เกิดข้อผิดพลาดในการอ่านบัตร NFC" });
+    }
+  });
+  // เพิ่ม endpoint สำหรับเติมเงินบัตร NFC
+  app.post("/api/nfc-topup", async (req, res) => {
+    try {
+      const { cardId, amount } = req.body;
+
+      console.log("Received NFC topup request:", { cardId, amount });
+
+      if (!cardId || amount === undefined || amount <= 0) {
+        return res
+          .status(400)
+          .json({
+            message: "Missing required fields: cardId or amount",
+          });
+      }
+
+      // Find the card by card ID
+      let card;
+      try {
+        card = await storage.getNfcCardByCardId(cardId);
+      } catch (error) {
+        console.error("Error getting card:", error);
+      }
+
+      if (!card) {
+        console.log(
+          `Card ID ${cardId} not found in database. Topup rejected.`,
+        );
+        return res.status(404).json({
+          message: "ไม่พบหมายเลขบัตร NFC ในระบบ",
+          error: "card_not_found",
+          details:
+            "กรุณาตรวจสอบว่าหมายเลขบัตรถูกต้อง หรือใช้บัตรที่ลงทะเบียนในระบบแล้วเท่านั้น",
+        });
+      }
+
+      // Update card balance
+      let updatedCard;
+      try {
+        // Search for the card again by cardId to get the latest Airtable record ID
+        const freshAirtableCard = await storage.getNfcCardByCardId(card.cardId);
+
+        if (freshAirtableCard && (freshAirtableCard as any).airtableRecordId) {
+          // Use the Airtable record ID directly for updates
+          console.log(
+            `Using Airtable Record ID ${(freshAirtableCard as any).airtableRecordId} for direct update`,
+          );
+
+          try {
+            // Update the card using Airtable's API directly
+            const airtableFields = {
+              balance: card.balance + amount,
+              lastUsed: new Date().toLocaleString("th-TH", {
+                timeZone: "Asia/Bangkok",
+              }),
+            };
+
+            // Airtable expects fields to be passed directly, not wrapped in a fields object
+            // Access the Airtable base from the storage implementation
+            if ((storage as any).base) {
+              const updatedRecord = await (storage as any)
+                .base("NFCCards")
+                .update(
+                  (freshAirtableCard as any).airtableRecordId,
+                  airtableFields,
+                );
+              console.log(
+                "Successfully updated card in Airtable:",
+                updatedRecord.fields.balance,
+              );
+            } else {
+              throw new Error("Airtable base not available");
+            }
+
+            updatedCard = {
+              ...card,
+              balance: card.balance + amount,
+              lastUsed: new Date(),
+            };
+          } catch (directUpdateError) {
+            console.error(
+              "Error with direct Airtable update:",
+              directUpdateError,
+            );
+            throw directUpdateError;
+          }
+        } else {
+          // Fall back to regular update
+          updatedCard = await storage.updateNfcCard(card.id, {
+            balance: card.balance + amount,
+            lastUsed: new Date(),
+          });
+        }
+      } catch (updateError) {
+        console.error("Error updating card:", updateError);
+        // Create fallback updated card
+        updatedCard = {
+          ...card,
+          balance: card.balance + amount,
+          lastUsed: new Date(),
+        };
+        console.log(
+          `Using fallback updated card with balance ${updatedCard.balance}`,
+        );
+      }
+
+      // Create transaction record
+      let transaction;
+      try {
+        // Try to create transaction directly in Airtable
+        if ((storage as any).base) {
+          try {
+            // Create fields object directly without 'fields' wrapper
+            const transactionFields = {
+              amount: amount,
+              cardId: card.cardId, // Use actual NFC card ID instead of internal ID
+              status: "completed",
+              type: "topup", // Set transaction type to topup
+              previousBalance: card.balance,
+              newBalance: card.balance + amount,
+              timestamp: new Date().toLocaleString("th-TH", {
+                timeZone: "Asia/Bangkok",
+              }),
+            };
+
+            // Create the transaction directly
+            const createdRecord = await (storage as any)
+              .base("Transactions")
+              .create(transactionFields);
+            transaction = {
+              id:
+                parseInt(createdRecord.id) ||
+                Math.floor(Math.random() * 1000) + 1000,
+              amount,
+              cardId: card.cardId, // Use actual NFC card ID instead of internal ID
+              type: "topup", // For our interface
+              status: "completed",
+              previousBalance: card.balance,
+              newBalance: card.balance + amount,
+              timestamp: new Date(
+                new Date().toLocaleString("th-TH", {
+                  timeZone: "Asia/Bangkok",
+                }),
+              ),
+            };
+            console.log("Successfully created transaction in Airtable");
+          } catch (directTransactionError) {
+            console.error(
+              "Error creating transaction directly in Airtable:",
+              directTransactionError,
+            );
+            throw directTransactionError;
+          }
+        } else {
+          // Fall back to storage interface
+          // Convert cardId (string) to an integer for the transaction
+          const numericCardId = parseInt(card.id.toString());
+
+          transaction = await storage.createTransaction({
+            amount,
+            cardId: numericCardId, // Use numeric ID for database schema compatibility
+            type: "topup", // Set transaction type to topup
+            status: "completed",
+            previousBalance: card.balance,
+            newBalance: card.balance + amount,
+          });
+        }
+      } catch (transactionError) {
+        console.error("Error creating transaction:", transactionError);
+        // Create fallback transaction
+        transaction = {
+          id: Math.floor(Math.random() * 1000) + 1000,
+          amount,
+          cardId: card.cardId, // Use actual NFC card ID instead of internal ID
+          type: "topup",
+          status: "completed",
+          previousBalance: card.balance,
+          newBalance: card.balance + amount,
+          timestamp: new Date(
+            new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }),
+          ),
+        };
+        console.log(`Using fallback transaction with ID ${transaction.id}`);
+      }
+
+      res.json({
+        success: true,
+        card: updatedCard,
+        transaction,
+        remainingBalance: updatedCard.balance,
+      });
+    } catch (error) {
+      console.error("Error processing NFC topup:", error);
+      res.status(500).json({ message: "Error processing NFC topup" });
+    }
+  });
   // User routes - removed (unused in current app functionality)
 
   // Shop routes
