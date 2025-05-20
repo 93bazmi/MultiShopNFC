@@ -3,10 +3,10 @@ import ShopsPage from "@/pages/ShopsPage";
 import ShopDetailPage from "@/pages/ShopDetailPage";
 import ProductsPage from "@/pages/ProductsPage";
 import POSPage from "@/pages/POSPage";
+import NFCTestPage from "@/pages/NFCTestPage";
 import NotFound from "@/pages/not-found";
 import MainLayout from "@/components/layouts/MainLayout";
 import TopupPage from "@/pages/TopupPage";
-import NFCTestPage from "@/pages/NFCTestPage"; // เพิ่ม import หน้าทดสอบ NFC
 function App() {
   return (
     <MainLayout>

@@ -553,6 +553,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // Special endpoint for NFC payment processing
+  // เพิ่ม Endpoint เพื่อทดสอบการอ่านบัตร NFC
+  app.post('/api/nfc-test-read', async (req, res) => {
+    try {
+      const { cardId } = req.body;
+      
+      if (!cardId) {
+        return res.status(400).json({ message: 'ต้องระบุหมายเลขบัตร NFC' });
+      }
+      
+      console.log('Received NFC test read request:', req.body);
+      
+      // ตรวจสอบว่าบัตรมีอยู่ในระบบหรือไม่
+      const card = await storage.getNfcCardByCardId(cardId);
+      
+      if (!card) {
+        return res.status(404).json({
+          message: 'ไม่พบหมายเลขบัตร NFC ในระบบ',
+          error: 'card_not_found',
+          details: 'กรุณาตรวจสอบว่าหมายเลขบัตรถูกต้อง หรือใช้บัตรที่ลงทะเบียนในระบบแล้วเท่านั้น'
+        });
+      }
+      
+      // ถ้าบัตรมีอยู่ในระบบ ส่งข้อมูลกลับไป
+      res.json({
+        success: true,
+        card: {
+          id: card.id,
+          cardId: card.cardId,
+          balance: card.balance,
+          lastUsed: card.lastUsed,
+          active: card.active
+        }
+      });
+    } catch (error) {
+      console.error('Error processing NFC test read:', error);
+      res.status(500).json({ message: 'เกิดข้อผิดพลาดในการอ่านบัตร NFC' });
+    }
+  });
+
   app.post("/api/nfc-payment", async (req, res) => {
     try {
       const { cardId, shopId, amount } = req.body;
