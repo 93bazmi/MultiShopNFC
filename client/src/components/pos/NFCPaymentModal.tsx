@@ -26,29 +26,39 @@ const NFCPaymentModal = ({
   onSuccess 
 }: NFCPaymentModalProps) => {
   const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState("กรุณาแตะบัตร NFC...");
+  const [status, setStatus] = useState("Reading card...");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
-  const [cardId, setCardId] = useState("");
+  const [cardId, setCardId] = useState(""); // ไม่กำหนดค่าเริ่มต้น ให้ผู้ใช้กรอกเอง
   const { toast } = useToast();
   const cardInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
       setProgress(0);
-      setStatus("กรุณาแตะบัตร NFC...");
+      setStatus("Reading card...");
       setIsProcessing(false);
       setShowManualEntry(false);
       
-      // แสดงหน้าจอให้ผู้ใช้ป้อนข้อมูลบัตรทันที โดยไม่ต้องรอหรือจำลองการอ่านบัตร
-      setTimeout(() => {
-        setShowManualEntry(true);
-        setStatus("กรุณาป้อนรหัสบัตร NFC");
-        // โฟกัสที่ช่องป้อนข้อมูลโดยอัตโนมัติ
-        if (cardInputRef.current) {
-          cardInputRef.current.focus();
-        }
-      }, 500); // รอสักครู่เพื่อให้ UI ได้แสดงผล
+      if (!showManualEntry) {
+        // Simulate NFC card detection progress but don't auto-process
+        const interval = setInterval(() => {
+          setProgress(prev => {
+            const next = Math.min(prev + 5, 75); // Only up to 75%
+            
+            // When progress is at 75%, just show waiting for card
+            if (prev < 75 && next >= 75) {
+              setStatus("Please enter your card number");
+              setShowManualEntry(true); // Auto-switch to manual mode instead
+              clearInterval(interval);
+            }
+            
+            return next;
+          });
+        }, 200);
+        
+        return () => clearInterval(interval);
+      }
     }
   }, [open]);
 
