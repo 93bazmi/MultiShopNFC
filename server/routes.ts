@@ -145,6 +145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Create fields object directly without 'fields' wrapper
             const transactionFields = {
               amount: amount,
+              shopId: "topup", // ใช้คำว่า "topup" เป็น shopId เพื่อระบุว่าเป็นการเติมเงิน
               cardId: card.cardId, // Use actual NFC card ID instead of internal ID
               status: "completed",
               type: "topup", // Set transaction type to topup
@@ -164,6 +165,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 parseInt(createdRecord.id) ||
                 Math.floor(Math.random() * 1000) + 1000,
               amount,
+              shopId: "topup", // ใช้คำว่า "topup" เป็น shopId
               cardId: card.cardId, // Use actual NFC card ID instead of internal ID
               type: "topup", // For our interface
               status: "completed",
@@ -190,6 +192,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           transaction = await storage.createTransaction({
             amount,
+            shopId: "topup", // ใช้คำว่า "topup" เป็น shopId
             cardId: numericCardId, // Use numeric ID for database schema compatibility
             type: "topup", // Set transaction type to topup
             status: "completed",
@@ -203,6 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         transaction = {
           id: Math.floor(Math.random() * 1000) + 1000,
           amount,
+          shopId: "topup", // ใช้คำว่า "topup" เป็น shopId
           cardId: card.cardId, // Use actual NFC card ID instead of internal ID
           type: "topup",
           status: "completed",
@@ -226,7 +230,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error processing NFC topup" });
     }
   });
-  // User routes - removed (unused in current app functionality)
 
   // Shop routes
   app.get("/api/shops", async (req, res) => {
