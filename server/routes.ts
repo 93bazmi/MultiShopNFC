@@ -35,11 +35,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // ลบธุรกรรมเก่าเกิน 10 นาที
     const TEN_MINUTES = 10 * 60 * 1000;
-    for (const [key, transaction] of recentTransactions.entries()) {
+    
+    // แก้ไขปัญหา TypeScript error โดยใช้ Array.from แทนการใช้ iterator โดยตรง
+    Array.from(recentTransactions.entries()).forEach(([key, transaction]) => {
       if (now - transaction.timestamp > TEN_MINUTES) {
         recentTransactions.delete(key);
       }
-    }
+    });
     
     return false; // ไม่ใช่ธุรกรรมซ้ำ
   };
@@ -120,6 +122,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .json({
             message: "Missing required fields: cardId or amount",
           });
+      }
+      
+      // ป้องกันการเติมเงินซ้ำซ้อน
+      // ใช้ shopId เป็น 0 สำหรับการเติมเงิน เพื่อแยกจากการชำระเงิน
+      if (checkDuplicateTransaction(cardId, 0, amount)) {
+        console.log(`ป้องกันการเติมเงินซ้ำ: ${cardId} - ${amount} coins`);
+        // ส่งข้อมูลสำเร็จเทียมเพื่อไม่ให้ UI พยายามส่งคำขอซ้ำ
+        return res.status(200).json({
+          success: true,
+          message: "Transaction already processed",
+          isDuplicate: true
+        });
       }
 
       // Find the card by card ID
@@ -268,6 +282,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             amount,
             cardId: numericCardId, // Use numeric ID for database schema compatibility
             type: "topup", // Set transaction type to topup
+            shopId: 0, // Use 0 for topup transactions
             status: "completed",
             previousBalance: card.balance,
             newBalance: card.balance + amount,
