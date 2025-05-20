@@ -108,15 +108,42 @@ const NFCPaymentModal = ({
   const [neededAmount, setNeededAmount] = useState(0);
   const [isTopupModalOpen, setIsTopupModalOpen] = useState(false);
   
+  // เพิ่มสถานะเพื่อป้องกันการแสกนซ้ำ
+  const [processedCardIds, setProcessedCardIds] = useState<Set<string>>(new Set());
+  const [processingTransaction, setProcessingTransaction] = useState(false);
+  
   // Process NFC payment
   const processPayment = async (manualCardId?: string) => {
-    if (isProcessing) return;
+    // ตรวจสอบว่ากำลังประมวลผลอยู่หรือไม่
+    if (isProcessing || processingTransaction) return;
+    
+    // ใช้ cardId ที่ส่งมาหรือที่อ่านได้จาก NFC
+    const cardIdToUse = manualCardId || cardId;
+    
+    // ตรวจสอบว่าเคยประมวลผลบัตรใบนี้ไปแล้วหรือไม่ (ยกเว้นกรณีไม่พอเงินและกำลังเติมเงิน)
+    if (!insufficientBalance && processedCardIds.has(cardIdToUse)) {
+      console.log("Card already processed, preventing duplicate payment", cardIdToUse);
+      toast({
+        title: "การประมวลผลถูกป้องกัน",
+        description: "บัตรนี้กำลังถูกประมวลผล โปรดรอสักครู่",
+        variant: "default"
+      });
+      return;
+    }
+    
+    setProcessingTransaction(true);
     setIsProcessing(true);
     setInsufficientBalance(false);
     
+    // เพิ่มบัตรเข้าไปในรายการที่กำลังประมวลผล
+    setProcessedCardIds(prev => {
+      const newSet = new Set(prev);
+      newSet.add(cardIdToUse);
+      return newSet;
+    });
+    
     try {
-      // Use manual card ID if provided, otherwise use the default one
-      const cardIdToUse = manualCardId || cardId;
+      // ตัวแปร cardIdToUse ถูกประกาศไว้ด้านบนแล้ว
       
       // Validate that we have a valid shop ID before proceeding
       if (!shopId) {
@@ -191,6 +218,10 @@ const NFCPaymentModal = ({
         
         // Wait another moment before closing
         setTimeout(() => {
+          // รีเซ็ตสถานะในการประมวลผลบัตร
+          setProcessingTransaction(false);
+          
+          // ปิดหน้าต่างชำระเงิน
           onSuccess(result);
         }, 1000);
       }, 1000);
@@ -231,8 +262,18 @@ const NFCPaymentModal = ({
         ),
         variant: "destructive"
       });
+      
       setStatus("การชำระเงินล้มเหลว กรุณาลองอีกครั้ง");
       setIsProcessing(false);
+      setProcessingTransaction(false);
+      
+      // นำบัตรออกจากรายการประมวลผล เพื่อให้สามารถทำรายการใหม่ได้
+      setProcessedCardIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(cardIdToUse);
+        return newSet;
+      });
+      
       // Not closing automatically so the user can try again
     }
   };
