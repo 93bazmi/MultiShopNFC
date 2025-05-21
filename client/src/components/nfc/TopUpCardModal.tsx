@@ -1,8 +1,19 @@
 import { useState, useEffect, useRef } from "react";
-import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogHeader,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Wifi, PlusCircle, WifiOff, AlertTriangle, XCircle } from "lucide-react";
+import {
+  Wifi,
+  PlusCircle,
+  WifiOff,
+  AlertTriangle,
+  XCircle,
+} from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { API } from "@/lib/airtable";
 import { useToast } from "@/hooks/use-toast";
@@ -16,105 +27,102 @@ interface TopupCardModalProps {
   onSuccess: (result: any) => void;
 }
 
-const TopupCardModal = ({ 
-  open, 
-  onClose, 
+const TopupCardModal = ({
+  open,
+  onClose,
   amount,
-  onSuccess 
+  onSuccess,
 }: TopupCardModalProps) => {
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState("กำลังอ่านบัตร...");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
-  const [cardId, setCardId] = useState(""); 
+  const [cardId, setCardId] = useState("");
   const { toast } = useToast();
   const cardInputRef = useRef<HTMLInputElement>(null);
-  
+
   // เพิ่มสถานะเพื่อป้องกันการแสกนซ้ำ
-  const [processedCardIds, setProcessedCardIds] = useState<Set<string>>(new Set());
+  const [processedCardIds, setProcessedCardIds] = useState<Set<string>>(
+    new Set(),
+  );
   const [processingTransaction, setProcessingTransaction] = useState(false);
 
   // ใช้ hook useNFC สำหรับการอ่านบัตร NFC จริง
-  const { 
-    isReading, 
-    supportedNFC, 
-    lastTagId, 
-    startReading: startNFCReading, 
+  const {
+    isReading,
+    supportedNFC,
+    lastTagId,
+    startReading: startNFCReading,
     stopReading: stopNFCReading,
-    error: nfcError
+    error: nfcError,
   } = useNFC({
     onRead: (serialNumber) => {
       // เมื่ออ่านบัตรได้แล้ว ส่งไปประมวลผลการเติมเงิน
       console.log("NFC card read for topup:", serialNumber);
-      
+
       // ตรวจสอบว่ากำลังประมวลผลอยู่หรือไม่
       if (isProcessing || processingTransaction) {
         console.log("Already processing a transaction, ignoring new card scan");
         return;
       }
-      
+
       // ตรวจสอบว่าเคยประมวลผลบัตรใบนี้ไปแล้วหรือไม่
       if (processedCardIds.has(serialNumber)) {
-        console.log("Card already processed, preventing duplicate topup", serialNumber);
+        console.log(
+          "Card already processed, preventing duplicate topup",
+          serialNumber,
+        );
         toast({
           title: "การประมวลผลถูกป้องกัน",
           description: "บัตรนี้กำลังถูกประมวลผล โปรดรอสักครู่",
-          variant: "default"
+          variant: "default",
         });
         return;
       }
-      
+
       setCardId(serialNumber);
       processTopup(serialNumber);
-    }
+    },
   });
 
+  // ✅ PATCH: อย่าใส่ showManualEntry ใน dependency!
   useEffect(() => {
     if (open) {
-      // รีเซ็ตสถานะเมื่อเปิดหน้าต่าง
       setProgress(0);
       setStatus("กำลังอ่านบัตร...");
       setIsProcessing(false);
       setShowManualEntry(false);
       setCardId("");
+      setProcessedCardIds(new Set());
 
-      // ตรวจสอบการรองรับ NFC
       if (!supportedNFC) {
         setStatus("อุปกรณ์ของคุณไม่รองรับ NFC");
         setShowManualEntry(true);
         return;
       }
+      startNFCReading();
 
-      // เริ่มอ่านบัตร NFC จริงด้วย Web NFC API
-      if (!showManualEntry) {
-        startNFCReading();
-        
-        // แสดงความคืบหน้าการรอบัตร
-        const interval = setInterval(() => {
-          setProgress(prev => {
-            // คงความคืบหน้าไว้ที่ 75% จนกว่าจะอ่านบัตรได้จริง
-            return Math.min(prev + 5, 75);
-          });
-        }, 200);
+      const interval = setInterval(() => {
+        setProgress((prev) => Math.min(prev + 5, 75));
+      }, 200);
 
-        return () => {
-          clearInterval(interval);
-          stopNFCReading(); // หยุดการอ่านเมื่อออกจากหน้าต่าง
-        };
-      }
+      return () => {
+        clearInterval(interval);
+        stopNFCReading();
+      };
     }
-  }, [open, supportedNFC, showManualEntry, startNFCReading, stopNFCReading]);
+    // eslint-disable-next-line
+  }, [open, supportedNFC]);
 
-  // แสดงข้อความเตือนเมื่อมีข้อผิดพลาดจาก NFC API
   useEffect(() => {
     if (nfcError) {
-      console.error("NFC error:", nfcError);
       setStatus("เกิดข้อผิดพลาดในการอ่านบัตร");
       toast({
         title: "เกิดข้อผิดพลาดในการอ่านบัตร",
         description: nfcError.message,
-        variant: "destructive"
+        variant: "destructive",
       });
+      stopNFCReading();
       setShowManualEntry(true);
     }
   }, [nfcError, toast]);
@@ -123,26 +131,29 @@ const TopupCardModal = ({
   const processTopup = async (manualCardId?: string) => {
     // ตรวจสอบว่ากำลังประมวลผลอยู่หรือไม่
     if (isProcessing || processingTransaction) return;
-    
+
     // ใช้ cardId ที่ส่งมาหรือที่อ่านได้จาก NFC
     const cardIdToUse = manualCardId || cardId;
-    
+
     // ตรวจสอบว่าเคยประมวลผลบัตรใบนี้ไปแล้วหรือไม่
     if (processedCardIds.has(cardIdToUse)) {
-      console.log("Card already processed, preventing duplicate topup", cardIdToUse);
+      console.log(
+        "Card already processed, preventing duplicate topup",
+        cardIdToUse,
+      );
       toast({
         title: "การประมวลผลถูกป้องกัน",
         description: "บัตรนี้กำลังถูกประมวลผล โปรดรอสักครู่",
-        variant: "default"
+        variant: "default",
       });
       return;
     }
-    
+
     setProcessingTransaction(true);
     setIsProcessing(true);
-    
+
     // เพิ่มบัตรเข้าไปในรายการที่กำลังประมวลผล
-    setProcessedCardIds(prev => {
+    setProcessedCardIds((prev) => {
       const newSet = new Set(prev);
       newSet.add(cardIdToUse);
       return newSet;
@@ -154,13 +165,13 @@ const TopupCardModal = ({
       console.log("Processing topup with:", {
         cardId: cardIdToUse,
         amount: amount,
-        type: "topup"
+        type: "topup",
       });
 
       // Use the dedicated NFC topup endpoint
       const response = await apiRequest("POST", "/api/nfc-topup", {
         cardId: cardIdToUse,
-        amount: amount
+        amount: amount,
       });
 
       if (!response.ok) {
@@ -171,11 +182,13 @@ const TopupCardModal = ({
           setStatus("NFC card not found");
 
           // ปรับข้อความแสดงความผิดพลาดให้สวยงามขึ้น
-          const errorMessage = `${errorData.message}\n${errorData.details || ""}`;
+          const errorMessage = ${errorData.message}\n${errorData.details || ""};
 
           // ใช้ error object ที่มีข้อมูลเพิ่มเติม
           const enhancedError = new Error(errorMessage);
-          (enhancedError as any).icon = <XCircle className="h-6 w-6 text-red-500" />;
+          (enhancedError as any).icon = (
+            <XCircle className="h-6 w-6 text-red-500" />
+          );
           (enhancedError as any).isCardError = true;
 
           throw enhancedError;
@@ -195,16 +208,18 @@ const TopupCardModal = ({
         setTimeout(() => {
           // รีเซ็ตสถานะในการประมวลผลบัตร
           setProcessingTransaction(false);
-          
+
           // ส่งผลลัพธ์กลับไป
           onSuccess(result);
         }, 1000);
       }, 1000);
-
     } catch (error) {
       console.error("Topup error:", error);
-      const errorMessage = error instanceof Error ? error.message : "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
-      const errorLines = errorMessage.split('\n');
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
+      const errorLines = errorMessage.split("\n");
 
       toast({
         title: "การเติมเงินล้มเหลว",
@@ -212,10 +227,12 @@ const TopupCardModal = ({
           <div className="space-y-2">
             <div className="space-y-1">
               {errorLines.map((line, index) => (
-                <p key={index} 
-                  className={index === 0 
-                    ? "font-semibold text-base"
-                    : "text-sm text-gray-600"
+                <p
+                  key={index}
+                  className={
+                    index === 0
+                      ? "font-semibold text-base"
+                      : "text-sm text-gray-600"
                   }
                 >
                   {line}
@@ -224,15 +241,15 @@ const TopupCardModal = ({
             </div>
           </div>
         ),
-        variant: "destructive"
+        variant: "destructive",
       });
-      
+
       setStatus("การเติมเงินล้มเหลว กรุณาลองอีกครั้ง");
       setIsProcessing(false);
       setProcessingTransaction(false);
-      
+
       // นำบัตรออกจากรายการประมวลผล เพื่อให้สามารถทำรายการใหม่ได้
-      setProcessedCardIds(prev => {
+      setProcessedCardIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(cardIdToUse);
         return newSet;
@@ -241,24 +258,20 @@ const TopupCardModal = ({
   };
 
   // For demo purposes, allow manual entry to trigger topup
+  // ✅ PATCH: ฟังก์ชันเปลี่ยนไป manual entry
   const handleManualEntry = () => {
+    stopNFCReading();
     setShowManualEntry(true);
-    setStatus("Please enter your NFC card number");
+    setStatus("กรุณากรอกหมายเลขบัตร NFC");
     setProgress(0);
-
-    // Focus on the input after showing it
-    setTimeout(() => {
-      if (cardInputRef.current) {
-        cardInputRef.current.focus();
-      }
-    }, 100);
+    setCardId("");
   };
 
   const handleProcessManualEntry = () => {
     if (!cardId.trim()) {
       toast({
         title: "Please enter your card number",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -268,16 +281,18 @@ const TopupCardModal = ({
     processTopup(cardId);
   };
 
-  return (
-    <Dialog open={open} onOpenChange={(isOpen) => {
-      if (!isOpen && !isProcessing) {
-        // ถ้าปิดหน้าต่าง ต้องหยุดการอ่านบัตรด้วย
-        if (isReading) {
-          stopNFCReading();
-        }
-        onClose();
-      }
-    }}>
+      return (
+        <Dialog
+          open={open}
+          onOpenChange={(isOpen) => {
+            if (!isOpen && !isProcessing) {
+              if (isReading) {
+                stopNFCReading();
+              }
+              onClose();
+            }
+          }}
+        >
       <DialogContent className="max-w-md p-4 md:p-6">
         <DialogHeader>
           <DialogTitle className="sr-only">เติมเงินบัตร NFC</DialogTitle>
@@ -293,17 +308,23 @@ const TopupCardModal = ({
                 <PlusCircle className="text-green-600 text-xl md:text-2xl" />
               )}
             </div>
-            <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2">เติมเงินบัตร NFC</h3>
+            <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2">
+              เติมเงินบัตร NFC
+            </h3>
             {!supportedNFC ? (
               <p className="text-sm md:text-base text-red-500">
                 อุปกรณ์นี้ไม่รองรับ NFC หรือ Web NFC API
               </p>
             ) : !showManualEntry ? (
-              <p className="text-sm md:text-base text-gray-600">กรุณาแตะบัตร NFC ที่ด้านหลังอุปกรณ์</p>
+              <p className="text-sm md:text-base text-gray-600">
+                กรุณาแตะบัตร NFC ที่ด้านหลังอุปกรณ์
+              </p>
             ) : (
-              <p className="text-sm md:text-base text-gray-600">กรุณากรอกหมายเลขบัตร NFC</p>
+              <p className="text-sm md:text-base text-gray-600">
+                กรุณากรอกหมายเลขบัตร NFC
+              </p>
             )}
-            
+
             {!supportedNFC && (
               <p className="text-xs text-gray-500 mt-1">
                 Web NFC API รองรับเฉพาะบน Chrome บน Android เท่านั้น
@@ -313,8 +334,12 @@ const TopupCardModal = ({
 
           <div className="border border-gray-200 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
             <div className="flex justify-between mb-2">
-              <span className="text-sm md:text-base text-gray-600">จำนวนเงินที่เติม:</span>
-              <span className="text-sm md:text-base font-bold text-gray-800">{amount} Coins</span>
+              <span className="text-sm md:text-base text-gray-600">
+                จำนวนเงินที่เติม:
+              </span>
+              <span className="text-sm md:text-base font-bold text-gray-800">
+                {amount} Coins
+              </span>
             </div>
           </div>
 
@@ -343,8 +368,8 @@ const TopupCardModal = ({
           )}
 
           <div className="flex space-x-3 md:space-x-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10"
               onClick={() => {
                 if (isReading) {
@@ -356,23 +381,18 @@ const TopupCardModal = ({
             >
               ยกเลิก
             </Button>
-            
+
             {!showManualEntry ? (
-              <Button 
-                className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10" 
-                onClick={() => {
-                  if (isReading) {
-                    stopNFCReading();
-                  }
-                  handleManualEntry();
-                }}
+              <Button
+                className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10"
+                onClick={handleManualEntry}
                 disabled={isProcessing}
               >
                 กรอกเอง
               </Button>
             ) : (
-              <Button 
-                className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10 bg-green-600 hover:bg-green-700" 
+              <Button
+                className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10 bg-green-600 hover:bg-green-700"
                 onClick={handleProcessManualEntry}
                 disabled={isProcessing}
               >
