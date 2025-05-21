@@ -182,7 +182,7 @@ const TopupCardModal = ({
           setStatus("NFC card not found");
 
           // ปรับข้อความแสดงความผิดพลาดให้สวยงามขึ้น
-          const errorMessage = ${errorData.message}\n${errorData.details || ""};
+          const errorMessage = `${errorData.message}\n${errorData.details || ""}`;
 
           // ใช้ error object ที่มีข้อมูลเพิ่มเติม
           const enhancedError = new Error(errorMessage);

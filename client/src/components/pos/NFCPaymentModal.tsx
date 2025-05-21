@@ -181,7 +181,7 @@ const NFCPaymentModal = ({
           setStatus("ไม่พบบัตร NFC ในระบบ");
 
           // ปรับข้อความแสดงความผิดพลาดให้สวยงามขึ้น
-          const errorMessage = ${errorData.message}\n${errorData.details || ""};
+          const errorMessage = `${errorData.message}\n${errorData.details || ""}`;
 
           // ใช้ error object ที่มีข้อมูลเพิ่มเติม
           const enhancedError = new Error(errorMessage);
@@ -302,7 +302,7 @@ const NFCPaymentModal = ({
 
     toast({
       title: "เติมเงินสำเร็จ",
-      description: เติมเงินจำนวน ${result.topupAmount || result.amount} Coins เรียบร้อยแล้ว,
+      description: `เติมเงินจำนวน ${result.topupAmount || result.amount} Coins เรียบร้อยแล้ว`,
       variant: "default",
     });
 
