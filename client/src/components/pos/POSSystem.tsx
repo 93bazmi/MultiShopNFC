@@ -330,7 +330,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
                     onClick={processPayment}
                     disabled={cart.length === 0}
                   >
-                    Proceed to Payment
+                   Pay Now
                   </Button>
                 </div>
               </div>
