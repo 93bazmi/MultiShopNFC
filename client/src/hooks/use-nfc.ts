@@ -74,11 +74,7 @@ export function useNFC({ onRead, autoStart = false, allowNFCReading = true }: Us
   }, [abortController]);
 
   const startReading = useCallback(async () => {
-    // ตรวจสอบอย่างเคร่งครัดว่าอนุญาตให้อ่าน NFC หรือไม่
-    if (!allowNFCReading) {
-      console.log("NFC reading is disabled");
-      return;
-    }
+    if (!supportedNFC || isReading || !allowNFCReading) return;
 
     if (!window.NDEFReader) {
       setError(new Error("NFC not supported on this device or browser"));
@@ -146,7 +142,7 @@ export function useNFC({ onRead, autoStart = false, allowNFCReading = true }: Us
       setStatus("error");
       setIsReading(false);
     }
-  }, [onRead, stopReading, isProcessing, allowNFCReading]);
+  }, [onRead, stopReading, isProcessing, allowNFCReading, supportedNFC, isReading]);
 
   return {
     isReading,

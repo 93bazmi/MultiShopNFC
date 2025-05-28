@@ -6,14 +6,16 @@ interface NFCPaymentSuccessProps {
   open: boolean;
   onClose: () => void;
   paymentResult: any;
-  onPrintReceipt: () => void; // เพิ่ม prop ใหม่
+  onPrintReceipt: () => void;
+  onClearCart?: () => void; // เพิ่ม prop สำหรับล้าง cart
 }
 
 const NFCPaymentSuccess = ({ 
   open, 
   onClose, 
   paymentResult,
-  onPrintReceipt // รับ prop ใหม่
+  onPrintReceipt,
+  onClearCart
 }: NFCPaymentSuccessProps) => {
   // Print receipt
   const handlePrintReceipt = () => {
@@ -69,7 +71,10 @@ const NFCPaymentSuccess = ({
             <Button 
               variant="outline"
               className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10"
-              onClick={onClose}
+              onClick={() => {
+                if (onClearCart) onClearCart();
+                onClose();
+              }}
             >
               Close
             </Button>

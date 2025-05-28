@@ -161,12 +161,16 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
     onClose(); // ปิด dialog ของ POSSystem
   };
 
+  // Clear cart function
+  const clearCart = () => {
+    setCart([]);
+  };
+
   // Close all modals and reset
   const handleCloseAll = () => {
     setShowNfcPayment(false);
     setShowPaymentSuccess(false);
     setShowReceiptPage(false);
-    // ไม่ต้องล้าง cart ที่นี่เพราะได้ล้างไปแล้วใน handlePaymentSuccess
     onClose();
   };
 
@@ -353,10 +357,11 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
 
       {/* Payment Success Modal */}
       <NFCPaymentSuccess
-        open={showPaymentSuccess && !showReceiptPage} // ปรับเงื่อนไขการแสดง
+        open={showPaymentSuccess && !showReceiptPage}
         onClose={handleCloseAll}
         paymentResult={paymentResult}
-        onPrintReceipt={handleShowReceipt} // เพิ่ม prop ใหม่
+        onPrintReceipt={handleShowReceipt}
+        onClearCart={clearCart} // เพิ่ม prop สำหรับล้าง cart
       />
     </>
   );
