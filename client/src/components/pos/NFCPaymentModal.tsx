@@ -43,6 +43,7 @@ const NFCPaymentModal = ({
     new Set(),
   );
   const [processingTransaction, setProcessingTransaction] = useState(false);
+  const [hasCompletedPayment, setHasCompletedPayment] = useState(false);
 
   const {
     isReading,
@@ -52,7 +53,8 @@ const NFCPaymentModal = ({
     error: nfcError,
   } = useNFC({
     onRead: (serialNumber) => {
-      if (isProcessing || processingTransaction) return;
+      // ป้องกันการประมวลผลเมื่อชำระเงินเสร็จแล้ว
+      if (isProcessing || processingTransaction || hasCompletedPayment) return;
 
       if (processedCardIds.has(serialNumber)) {
         toast({
@@ -65,7 +67,7 @@ const NFCPaymentModal = ({
       setCardId(serialNumber);
       processPayment(serialNumber);
     },
-    allowNFCReading: open, // อนุญาตให้อ่าน NFC ได้เฉพาะเมื่อ modal เปิดอยู่
+    allowNFCReading: open && !hasCompletedPayment, // หยุดอ่านเมื่อชำระเงินเสร็จแล้ว
   });
 
   useEffect(() => {
@@ -76,6 +78,8 @@ const NFCPaymentModal = ({
       setShowManualEntry(false);
       setCardId("");
       setProcessedCardIds(new Set());
+      setProcessingTransaction(false);
+      setHasCompletedPayment(false); // รีเซ็ตสถานะการชำระเงิน
 
       if (!supportedNFC) {
         setStatus("อุปกรณ์ของคุณไม่รองรับ NFC");
@@ -88,7 +92,9 @@ const NFCPaymentModal = ({
       setProgress(0);
       setStatus("");
       setIsProcessing(false);
-      stopNFCReading();
+      setProcessingTransaction(false);
+      setHasCompletedPayment(false);
+      stopNFCReading(); // หยุดอ่าน NFC ทันทีเมื่อปิด modal
     }
   }, [open, supportedNFC]);
 
@@ -163,6 +169,7 @@ const NFCPaymentModal = ({
 
       // หยุดอ่าน NFC ทันทีเมื่อชำระเงินสำเร็จ
       stopNFCReading();
+      setHasCompletedPayment(true); // ตั้งค่าว่าชำระเงินเสร็จแล้ว
       
       setTimeout(() => {
         setProcessingTransaction(false);
@@ -212,7 +219,7 @@ const NFCPaymentModal = ({
     <Dialog
       open={open}
       onOpenChange={(isOpen) => {
-        if (!isOpen && !isProcessing) {
+        if (!isOpen && !isProcessing && !hasCompletedPayment) {
           if (isReading) stopNFCReading();
           onClose();
         }
@@ -297,9 +304,11 @@ const NFCPaymentModal = ({
               className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10"
               onClick={() => {
                 if (isReading) stopNFCReading();
-                onClose();
+                if (!hasCompletedPayment) {
+                  onClose();
+                }
               }}
-              disabled={isProcessing}
+              disabled={isProcessing || hasCompletedPayment}
             >
               ยกเลิก
             </Button>
