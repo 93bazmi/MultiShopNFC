@@ -28,7 +28,8 @@ export function NFCReader({ onTagRead, showCardBalance = true }: NFCReaderProps)
     onRead: async (serialNumber) => {
       console.log('Card read:', serialNumber);
       handleCardRead(serialNumber);
-    }
+    },
+    allowNFCReading: false, // ปิดการอ่าน NFC อัตโนมัติ
   });
 
   // ฟังก์ชันจัดการเมื่อได้รับการอ่านบัตร NFC

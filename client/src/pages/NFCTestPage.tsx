@@ -39,7 +39,8 @@ const NFCTestPage = () => {
       // เมื่ออ่านบัตรได้แล้ว ให้ส่งค่าไปตรวจสอบกับ API
       console.log("NFC card read:", serialNumber);
       testReadNFCCard(serialNumber);
-    }
+    },
+    allowNFCReading: false, // ปิดการอ่าน NFC อัตโนมัติ
   });
   
   // แสดงผลการอัพเดทความคืบหน้าเมื่อกำลังอ่านบัตร
