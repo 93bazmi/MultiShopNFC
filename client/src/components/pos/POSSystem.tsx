@@ -122,6 +122,7 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
       return;
     }
 
+    // ป้องกันการชำระเงินเมื่อ cart ว่าง
     if (cart.length === 0) {
       alert("กรุณาเลือกสินค้าก่อนชำระเงิน");
       return;
@@ -148,6 +149,9 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
     setPaymentResult(resultWithCart);
     setShowNfcPayment(false);
     setShowPaymentSuccess(true);
+    
+    // ล้าง cart ทันทีหลังชำระเงินสำเร็จ
+    setCart([]);
   };
 
   // เพิ่มฟังก์ชันสำหรับการแสดงใบเสร็จ
@@ -161,8 +165,8 @@ const POSSystem = ({ open, onClose, activeShop }: POSSystemProps) => {
   const handleCloseAll = () => {
     setShowNfcPayment(false);
     setShowPaymentSuccess(false);
-    setShowReceiptPage(false); // เพิ่มบรรทัดนี้
-    setCart([]);
+    setShowReceiptPage(false);
+    // ไม่ต้องล้าง cart ที่นี่เพราะได้ล้างไปแล้วใน handlePaymentSuccess
     onClose();
   };
 

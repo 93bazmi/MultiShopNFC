@@ -160,6 +160,9 @@ const NFCPaymentModal = ({
       setProgress(100);
       setStatus("ชำระเงินสำเร็จ!");
 
+      // หยุดอ่าน NFC ทันทีเมื่อชำระเงินสำเร็จ
+      stopNFCReading();
+      
       setTimeout(() => {
         setProcessingTransaction(false);
         onSuccess(result);
