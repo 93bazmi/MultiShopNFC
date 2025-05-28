@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { API } from "@/lib/airtable";
@@ -14,6 +14,7 @@ const ShopDetailPage = () => {
   const [, params] = useRoute("/shop/:id");
   const shopId = params?.id ? parseInt(params.id) : 0;
   const [showPOS, setShowPOS] = useState(false);
+  const [posKey, setPosKey] = useState(0); // Key เพื่อ force reset POS component
 
   // Fetch shop
   const { data: shop, isLoading: shopLoading } = useQuery({
@@ -197,7 +198,11 @@ const ShopDetailPage = () => {
             <div className="mt-6 flex justify-center">
               <Button 
                 className="px-6 py-6 text-base bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-300" 
-                onClick={() => setShowPOS(true)}
+                onClick={() => {
+                  // เคลียร์และรีเซ็ต POS
+                  setPosKey(prev => prev + 1);
+                  setShowPOS(true);
+                }}
               >
                 <CreditCard className="mr-2 h-5 w-5" />
                 เลือกสินค้าและชำระเงิน
@@ -209,6 +214,7 @@ const ShopDetailPage = () => {
 
       {/* POS System Modal */}
       <POSSystem 
+        key={posKey} // ใช้ key เพื่อ force reset component
         open={showPOS} 
         onClose={() => setShowPOS(false)} 
         activeShop={shopData}
