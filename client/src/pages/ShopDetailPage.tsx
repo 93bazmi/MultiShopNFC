@@ -9,12 +9,16 @@ import { Wine, ShoppingBag, ChefHat, CreditCard, ArrowLeft, Coffee, Cookie, IceC
 import { cn } from "@/lib/utils";
 import POSSystem from "@/components/pos/POSSystem";
 import { Shop, Product } from "@shared/schema";
+import useNFC from "@/hooks/use-nfc";
 
 const ShopDetailPage = () => {
   const [, params] = useRoute("/shop/:id");
   const shopId = params?.id ? parseInt(params.id) : 0;
   const [showPOS, setShowPOS] = useState(false);
   const [posKey, setPosKey] = useState(0); // Key เพื่อ force reset POS component
+
+  // ปิดการอ่าน NFC ในหน้า ShopDetailPage ทั้งหมด
+  useNFC({ allowNFCReading: false });
 
   // Fetch shop
   const { data: shop, isLoading: shopLoading } = useQuery({
