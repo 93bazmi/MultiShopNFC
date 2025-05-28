@@ -24,9 +24,10 @@ export type NFCReadStatus =
 interface UseNFCOptions {
   onRead?: (serialNumber: string) => Promise<void> | void;
   autoStart?: boolean;
+  allowNFCReading?: boolean;
 }
 
-export function useNFC({ onRead, autoStart = false }: UseNFCOptions = {}) {
+export function useNFC({ onRead, autoStart = false, allowNFCReading = true }: UseNFCOptions = {}) {
   const [isReading, setIsReading] = useState(false);
   const [status, setStatus] = useState<NFCReadStatus>("idle");
   const [supportedNFC, setSupportedNFC] = useState<boolean | null>(null);
@@ -40,7 +41,7 @@ export function useNFC({ onRead, autoStart = false }: UseNFCOptions = {}) {
     const checkNFCSupport = () => {
       if ("NDEFReader" in window) {
         setSupportedNFC(true);
-        if (autoStart) {
+        if (autoStart && allowNFCReading) {
           startReading();
         }
       } else {
@@ -48,7 +49,7 @@ export function useNFC({ onRead, autoStart = false }: UseNFCOptions = {}) {
       }
     };
     checkNFCSupport();
-  }, [autoStart]);
+  }, [autoStart, allowNFCReading]);
 
   const stopReading = useCallback(() => {
     if (abortController) {
@@ -60,6 +61,11 @@ export function useNFC({ onRead, autoStart = false }: UseNFCOptions = {}) {
   }, [abortController]);
 
   const startReading = useCallback(async () => {
+    if (!allowNFCReading) {
+      console.log("NFC reading is disabled");
+      return;
+    }
+
     if (!window.NDEFReader) {
       setError(new Error("NFC not supported on this device or browser"));
       setStatus("not-supported");
@@ -121,7 +127,7 @@ export function useNFC({ onRead, autoStart = false }: UseNFCOptions = {}) {
       setStatus("error");
       setIsReading(false);
     }
-  }, [onRead, stopReading, isProcessing]);
+  }, [onRead, stopReading, isProcessing, allowNFCReading]);
 
   return {
     isReading,

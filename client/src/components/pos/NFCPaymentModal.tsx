@@ -65,6 +65,7 @@ const NFCPaymentModal = ({
       setCardId(serialNumber);
       processPayment(serialNumber);
     },
+    allowNFCReading: open, // อนุญาตให้อ่าน NFC ได้เฉพาะเมื่อ modal เปิดอยู่
   });
 
   useEffect(() => {
