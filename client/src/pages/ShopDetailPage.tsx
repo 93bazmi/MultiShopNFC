@@ -117,7 +117,7 @@ const ShopDetailPage = () => {
       </div>
     );
   }
-  
+
   // TypeScript safety for shop object
   const shopData = shop as Shop;
 
@@ -130,7 +130,7 @@ const ShopDetailPage = () => {
             กลับไปยังรายการร้านค้า
           </Button> */}
         </div>
-        
+
         <Card className="overflow-hidden border-none shadow-md">
           {/* Shop Header */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 md:p-8">
@@ -154,10 +154,10 @@ const ShopDetailPage = () => {
               </div>
             </div>
           </div>
-          
+
           <CardContent className="p-6">
             {/* <h2 className="text-lg md:text-xl font-semibold mb-4 text-gray-800">สินค้าของร้าน</h2>
-            
+
             {productsLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -193,7 +193,7 @@ const ShopDetailPage = () => {
                 ))}
               </div>
             )} */}
-            
+
             <div className="mt-6 flex justify-center">
               <Button 
                 className="px-6 py-6 text-base bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-300" 
@@ -206,7 +206,7 @@ const ShopDetailPage = () => {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* POS System Modal */}
       <POSSystem 
         open={showPOS} 
