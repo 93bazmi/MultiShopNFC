@@ -44,6 +44,8 @@ const NFCPaymentModal = ({
   );
   const [processingTransaction, setProcessingTransaction] = useState(false);
 
+  const [nfcEnabled, setNfcEnabled] = useState(false);
+
   const {
     isReading,
     supportedNFC,
@@ -65,29 +67,29 @@ const NFCPaymentModal = ({
       setCardId(serialNumber);
       processPayment(serialNumber);
     },
-    allowNFCReading: open, // อนุญาตให้อ่าน NFC ได้เฉพาะเมื่อ modal เปิดอยู่
+    allowNFCReading: nfcEnabled, // อนุญาตให้อ่าน NFC เฉพาะเมื่อเปิดใช้งาน
   });
 
   useEffect(() => {
     if (open) {
       setProgress(0);
-      setStatus("กรุณาแตะบัตร NFC ที่ด้านหลังอุปกรณ์");
+      setStatus("กรุณากดปุ่ม 'Pay Now' เพื่อเริ่มชำระเงิน");
       setIsProcessing(false);
       setShowManualEntry(false);
       setCardId("");
       setProcessedCardIds(new Set());
+      setNfcEnabled(false); // ปิด NFC เมื่อเปิด modal
 
       if (!supportedNFC) {
         setStatus("อุปกรณ์ของคุณไม่รองรับ NFC");
         setShowManualEntry(true);
         return;
       }
-
-      startNFCReading();
     } else {
       setProgress(0);
       setStatus("");
       setIsProcessing(false);
+      setNfcEnabled(false); // ปิด NFC เมื่อปิด modal
       stopNFCReading();
     }
   }, [open, supportedNFC]);
@@ -191,6 +193,7 @@ const NFCPaymentModal = ({
 
   const handleManualEntry = () => {
     stopNFCReading();
+    setNfcEnabled(false);
     setShowManualEntry(true);
     setStatus("กรุณากรอกหมายเลขบัตร NFC");
     setProgress(0);
@@ -297,6 +300,7 @@ const NFCPaymentModal = ({
               className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10"
               onClick={() => {
                 if (isReading) stopNFCReading();
+                setNfcEnabled(false);
                 onClose();
               }}
               disabled={isProcessing}
@@ -305,13 +309,27 @@ const NFCPaymentModal = ({
             </Button>
 
             {!showManualEntry ? (
-              <Button
-                className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10"
-                onClick={handleManualEntry}
-                disabled={isProcessing}
-              >
-                กรอกเอง
-              </Button>
+              !nfcEnabled && !isProcessing ? (
+                <Button
+                  className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10 bg-primary hover:bg-primary/90"
+                  onClick={() => {
+                    setNfcEnabled(true);
+                    setStatus("กรุณาแตะบัตร NFC ที่ด้านหลังอุปกรณ์");
+                    startNFCReading();
+                  }}
+                  disabled={isProcessing}
+                >
+                  Pay Now
+                </Button>
+              ) : (
+                <Button
+                  className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10"
+                  onClick={handleManualEntry}
+                  disabled={isProcessing}
+                >
+                  กรอกเอง
+                </Button>
+              )
             ) : (
               <Button
                 className="flex-1 text-xs md:text-sm py-1 h-9 md:h-10 bg-primary hover:bg-primary/90"
