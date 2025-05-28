@@ -38,6 +38,19 @@ export function useNFC({ onRead, autoStart = false, allowNFCReading = true }: Us
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
+    if (!allowNFCReading) {
+      setIsReading(false);
+      setError(null);
+      // หยุดการอ่าน NFC ทันที
+      if (abortController) {
+        if (abortController) {
+          abortController.abort();
+        }
+        setAbortController(null);
+      }
+      return;
+    }
+
     const checkNFCSupport = () => {
       if ("NDEFReader" in window) {
         setSupportedNFC(true);
@@ -49,7 +62,7 @@ export function useNFC({ onRead, autoStart = false, allowNFCReading = true }: Us
       }
     };
     checkNFCSupport();
-  }, [autoStart, allowNFCReading]);
+  }, [autoStart, allowNFCReading, abortController]);
 
   const stopReading = useCallback(() => {
     if (abortController) {
@@ -61,6 +74,7 @@ export function useNFC({ onRead, autoStart = false, allowNFCReading = true }: Us
   }, [abortController]);
 
   const startReading = useCallback(async () => {
+    // ตรวจสอบอย่างเคร่งครัดว่าอนุญาตให้อ่าน NFC หรือไม่
     if (!allowNFCReading) {
       console.log("NFC reading is disabled");
       return;
@@ -83,6 +97,11 @@ export function useNFC({ onRead, autoStart = false, allowNFCReading = true }: Us
       const ndef = new window.NDEFReader();
 
       ndef.onreading = (event: any) => {
+        // ตรวจสอบอีกครั้งก่อนประมวลผล
+        if (!allowNFCReading) {
+          stopReading();
+          return;
+        }
         const serialNumber = event.serialNumber;
         if (!serialNumber) return;
 
